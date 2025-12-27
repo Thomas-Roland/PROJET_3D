@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinthe 3D - Bille Lumineuse</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+    <!-- Menu de démarrage -->
+    <div id="startMenu" class="menu-overlay">
+        <div class="menu-box">
+            <h1>Labyrinthe 3D</h1>
+            <h2>Bille Lumineuse</h2>
+            <p>Inclinez le labyrinthe pour guider la bille vers la sortie</p>
+            <button class="difficulty-btn" data-difficulty="beginner">
+                <span class="btn-title">Débutant</span>
+                <span class="btn-desc">2 ennemis - 3 minutes</span>
+            </button>
+            <button class="difficulty-btn" data-difficulty="intermediate">
+                <span class="btn-title">Intermédiaire</span>
+                <span class="btn-desc">4 ennemis - 2 minutes</span>
+            </button>
+            <button class="difficulty-btn" data-difficulty="expert">
+                <span class="btn-title">Expert</span>
+                <span class="btn-desc">6 ennemis - 1m30</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Interface de jeu -->
+    <div id="gameUI" style="display: none;">
+        <!-- Stats en haut à gauche -->
+        <div id="stats">
+            <div class="stat-item">
+                <span class="stat-label">Niveau</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Score</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Cristaux</span>
+                <span class="stat-value crystal-count" id="crystals">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Chutes</span>
+                <span class="stat-value falls-count" id="falls">0</span>
+            </div>
+            <div id="timer" class="timer">3:00</div>
+            <button id="quitGame" class="btn-small">Quitter</button>
+        </div>
+        
+        <!-- Contrôles en bas -->
+        <div id="controls">
+            <div class="control-info">
+                <p><strong>Clic + Glisser</strong> : Incliner le labyrinthe</p>
+                <p><strong>Molette</strong> : Zoom</p>
+                <p><strong>Objectif</strong> : Atteindre la zone verte !</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de victoire -->
+    <div id="victory" class="menu-overlay" style="display: none;">
+        <div class="menu-box">
+            <h1 class="victory-title">Niveau Réussi !</h1>
+            <p id="victoryMessage"></p>
+            <div class="score-display">
+                <div class="score-item">
+                    <span class="score-label">Niveau terminé</span>
+                    <span class="score-value">+200 pts</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Cristaux collectés</span>
+                    <span class="score-value" id="crystalBonus">0 pts</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Bonus temps</span>
+                    <span class="score-value" id="timeBonus">0 pts</span>
+                </div>
+                <div class="score-item total">
+                    <span class="score-label">Score total</span>
+                    <span class="score-value" id="totalScore">0</span>
+                </div>
+            </div>
+            <button id="nextLevel" class="difficulty-btn">Niveau suivant</button>
+            <button id="returnMenuVictory" class="difficulty-btn btn-secondary">Menu principal</button>
+        </div>
+    </div>
+
+    <!-- Écran de game over -->
+    <div id="gameOver" class="menu-overlay" style="display: none;">
+        <div class="menu-box">
+            <h1 class="gameover-title">Game Over</h1>
+            <p id="gameOverMessage"></p>
+            <div class="final-score">
+                <span class="score-label">Score final</span>
+                <span id="finalScore" class="score-value">0</span>
+            </div>
+            <button id="returnMenu" class="difficulty-btn">Recommencer</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

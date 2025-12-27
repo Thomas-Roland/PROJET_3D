@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Labyrinthe 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a1e 0%, #1a1a3e 100%);
+            color: white;
+        }
+
+        .home-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .home-title {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #44ffff;
+        }
+
+        .home-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #aaa;
+        }
+
+        .enter-btn {
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            border: 2px solid #44ffff;
+            border-radius: 10px;
+            background: #2a2a4e;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .enter-btn:hover {
+            background: #3a3a6e;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .home-title {
+                font-size: 2.2rem;
+            }
+            
+            .home-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <h1 class="home-title">Labyrinthe 3D</h1>
+        <p class="home-subtitle">Guidez la bille lumineuse à travers le labyrinthe suspendu dans l'espace !</p>
+        <button class="enter-btn" onclick="window.location.href='index.html'">
+            COMMENCER
+        </button>
+    </div>
+</body>
