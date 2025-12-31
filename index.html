@@ -30,7 +30,6 @@
 
     <!-- Interface de jeu -->
     <div id="gameUI" style="display: none;">
-        <!-- Stats en haut à gauche -->
         <div id="stats">
             <div class="stat-item">
                 <span class="stat-label">Niveau</span>
@@ -52,7 +51,6 @@
             <button id="quitGame" class="btn-small">Quitter</button>
         </div>
         
-        <!-- Contrôles en bas -->
         <div id="controls">
             <div class="control-info">
                 <p><strong>Clic + Glisser</strong> : Incliner le labyrinthe</p>
@@ -103,7 +101,19 @@
         </div>
     </div>
 
+    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- IMPORTANT: Charger les scripts dans cet ordre exact -->
+    <!-- 1. Moteur physique (dépendances: Three.js) -->
+    <script src="physics.js"></script>
+    
+    <!-- 2. Gestionnaires (dépendances: Three.js) -->
+    <script src="platforms.js"></script>
+    <script src="enemies.js"></script>
+    <script src="crystals.js"></script>
+    
+    <!-- 3. Orchestrateur principal (dépendances: tous les autres) -->
     <script src="main.js"></script>
 </body>
 </html>
