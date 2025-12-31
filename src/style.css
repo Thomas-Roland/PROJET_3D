@@ -7,7 +7,7 @@
 body {
     font-family: Arial, sans-serif;
     overflow: hidden;
-    background: #0a0a1e;
+    background: #000000; /* Noir profond comme le ciel étoilé */
     color: white;
 }
 

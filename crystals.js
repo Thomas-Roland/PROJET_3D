@@ -11,14 +11,15 @@ class CrystalManager {
         this.clear();
         
         for (let i = 0; i < count; i++) {
-            const x = (Math.random() - 0.5) * 10;
-            const y = 2.8;
-            const z = (Math.random() - 0.5) * 10;
+            const x = (Math.random() - 0.5) * 14; // Zone plus large
+            const y = 6.0; // Plus haut (y=5 + 1.0)
+            const z = (Math.random() - 0.5) * 14;
             
-            const crystalGeo = new THREE.OctahedronGeometry(0.4, 0);
+            const crystalGeo = new THREE.OctahedronGeometry(0.5, 0); // Plus gros
             const crystalMat = new THREE.MeshStandardMaterial({ 
                 color: 0x44ffff,
-                emissive: 0x00ffff
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.6
             });
             
             const crystal = new THREE.Mesh(crystalGeo, crystalMat);

@@ -66,7 +66,8 @@ scene.background = new THREE.Color(0x0a0a1e);
 scene.fog = new THREE.Fog(0x0a0a1e, 10, 50);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 15, 15);
+camera.position.set(0, 25, 25); // Vue de dessus en diagonale
+camera.lookAt(0, 5, 0); // Regarde le centre de la plateforme (y=5)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -91,7 +92,8 @@ let level = 1;
 const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
-// Paramètres de difficulté
+
+// Paramètres de difficulté (MOINS D'ENNEMIS)
 const difficultySettings = {
     beginner: { time: 180, enemyCount: 2, crystalCount: 3, wallComplexity: 'simple', holeCount: 2 },
     intermediate: { time: 120, enemyCount: 4, crystalCount: 5, wallComplexity: 'medium', holeCount: 3 },
@@ -140,7 +142,7 @@ renderer.domElement.addEventListener('mouseup', () => {
 renderer.domElement.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (gameState !== 'playing') return;
-    camera.position.y = Math.max(10, Math.min(25, camera.position.y + e.deltaY * 0.01));
+    camera.position.y = Math.max(15, Math.min(30, camera.position.y + e.deltaY * 0.01)); // Limites ajustées
 });
 
 // Fonctions UI
@@ -165,17 +167,20 @@ function createBall() {
         if (ballLight) scene.remove(ballLight);
     }
     
-    const ballGeo = new THREE.SphereGeometry(0.4, 32, 32);
+    // Bille PLUS GROSSE (0.5 au lieu de 0.4)
+    const ballGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const ballMat = new THREE.MeshStandardMaterial({ 
         color: 0xffff00,
-        emissive: 0xffff00
+        emissive: 0xffff00,
+        emissiveIntensity: 0.8
     });
     ball = new THREE.Mesh(ballGeo, ballMat);
-    ball.position.set(-4.5, 3, -4.5);
+    ball.position.set(-7, 6, -7); // Position de départ en bas à gauche, hauteur ajustée
     ball.castShadow = true;
     mazeGroup.add(ball);
     
-    ballLight = new THREE.PointLight(0xffff00, 1, 10);
+    // Lumière de la bille plus forte
+    ballLight = new THREE.PointLight(0xffff00, 1.5, 12);
     ballLight.position.copy(ball.position);
     scene.add(ballLight);
     
@@ -184,39 +189,60 @@ function createBall() {
 
 // Gestion du jeu
 function startGame(diff) {
+    console.log('=== DÉMARRAGE DU JEU ===');
+    console.log('Difficulté:', diff);
+    
     difficulty = diff;
     level = 1;
     
-    // Initialisation des gestionnaires
-    pointsManager = new PointsManager(updateUI);
-    timeManager = new TimeManager(updateTimerUI, gameOver);
-    platformManager = new PlatformManager(scene, mazeGroup, difficultySettings);
-    enemyManager = new EnemyManager(scene, mazeGroup);
-    crystalManager = new CrystalManager(scene, mazeGroup);
-    
-    // Création du niveau
-    const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
-    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
-    
-    // Création de la bille
-    createBall();
-    
-    // Initialisation du moteur physique
-    physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
-    
-    // Callbacks du moteur physique
-    physicsEngine.onFall = () => pointsManager.addFall();
-    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-    physicsEngine.onLevelComplete = () => levelComplete();
-    
-    // Affichage
-    document.getElementById('startMenu').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    
-    gameState = 'playing';
-    updateUI();
-    timeManager.startTimer(difficultySettings[difficulty].time);
+    try {
+        // Initialisation des gestionnaires
+        pointsManager = new PointsManager(updateUI);
+        timeManager = new TimeManager(updateTimerUI, gameOver);
+        platformManager = new PlatformManager(scene, mazeGroup, difficultySettings);
+        enemyManager = new EnemyManager(scene, mazeGroup);
+        crystalManager = new CrystalManager(scene, mazeGroup);
+        
+        console.log('Gestionnaires créés');
+        
+        // Création du niveau
+        const { walls, holes, exit } = platformManager.createPlatform(difficulty);
+        console.log('Plateforme créée, murs:', walls.length, 'trous:', holes.length);
+        
+        const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
+        console.log('Ennemis créés:', enemies.length);
+        
+        const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
+        console.log('Cristaux créés:', crystals.length);
+        
+        // Création de la bille
+        createBall();
+        console.log('Bille créée à la position:', ball.position);
+        
+        // Initialisation du moteur physique
+        physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
+        console.log('Moteur physique initialisé');
+        
+        // Callbacks du moteur physique
+        physicsEngine.onFall = () => {
+            pointsManager.addFall();
+        };
+        physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+        physicsEngine.onLevelComplete = () => levelComplete();
+        
+        // Affichage
+        document.getElementById('startMenu').style.display = 'none';
+        document.getElementById('gameUI').style.display = 'block';
+        
+        gameState = 'playing';
+        updateUI();
+        timeManager.startTimer(difficultySettings[difficulty].time);
+        
+        console.log('=== JEU DÉMARRÉ AVEC SUCCÈS ===');
+    } catch (error) {
+        console.error('ERREUR LORS DU DÉMARRAGE:', error);
+        alert('Erreur: ' + error.message);
+    }
 }
 
 function unlockDifficulties() {
@@ -318,10 +344,8 @@ function animate() {
             ballLight.position.copy(ball.position);
         }
         
-        // Caméra suit la bille
-        if (ball) {
-            camera.lookAt(ball.position);
-        }
+        // Caméra fixe regardant le centre de la plateforme
+        camera.lookAt(0, 5, 0);
     }
     
     renderer.render(scene, camera);

@@ -17,22 +17,19 @@ class PlatformManager {
         
         const settings = this.difficultySettings[difficulty];
         
-        // Plateforme principale
-        const platformGeo = new THREE.BoxGeometry(12, 0.5, 12);
+        // Plateforme principale (AGRANDIE : 18x18 au lieu de 12x12)
+        const platformGeo = new THREE.BoxGeometry(18, 0.5, 18);
         const platformMat = new THREE.MeshStandardMaterial({ color: 0x1a1a3e });
         this.platform = new THREE.Mesh(platformGeo, platformMat);
-        this.platform.position.y = 2;
+        this.platform.position.y = 5; // RemontÃ©e Ã  y=5
         this.platform.receiveShadow = true;
         this.mazeGroup.add(this.platform);
         
-        // Création des murs
+        // CrÃ©ation des murs
         this.createWalls(settings.wallComplexity);
         
-        // Création des trous
-        this.createHoles(settings.holeCount);
-        
-        // Création de la sortie
-        this.createExit();
+        // CrÃ©ation du trou objectif (UN SEUL)
+        this.createGoalHole();
         
         return {
             walls: this.walls,
@@ -47,69 +44,61 @@ class PlatformManager {
         const createWall = (x, y, z, width, depth) => {
             const geo = new THREE.BoxGeometry(width, 1, depth);
             const wall = new THREE.Mesh(geo, wallMat);
-            wall.position.set(x, y + 2.5, z);
+            wall.position.set(x, y + 5.5, z); // AjustÃ© pour y=5
             wall.castShadow = true;
             wall.receiveShadow = true;
             this.mazeGroup.add(wall);
             this.walls.push(wall);
         };
         
-        // Murs extérieurs
-        createWall(0, 0.25, -6, 12, 0.3);
-        createWall(0, 0.25, 6, 12, 0.3);
-        createWall(-6, 0.25, 0, 0.3, 12);
-        createWall(6, 0.25, 0, 0.3, 12);
+        // Murs extÃ©rieurs (AGRANDIS pour plateforme 18x18)
+        createWall(0, 0.25, -9, 18, 0.3);    // Mur nord
+        createWall(0, 0.25, 9, 18, 0.3);     // Mur sud
+        createWall(-9, 0.25, 0, 0.3, 18);    // Mur ouest
+        createWall(9, 0.25, 0, 0.3, 18);     // Mur est
         
-        // Murs internes selon complexité
+        // Murs internes selon complexitÃ©
         if (complexity === 'simple') {
-            createWall(-3, 0.25, -3, 0.3, 4);
-            createWall(3, 0.25, 3, 0.3, 4);
-            createWall(0, 0.25, 0, 4, 0.3);
+            createWall(-4, 0.25, -4, 0.3, 6);
+            createWall(4, 0.25, 4, 0.3, 6);
+            createWall(0, 0.25, 0, 6, 0.3);
         } else if (complexity === 'medium') {
-            createWall(-3, 0.25, -3, 0.3, 6);
-            createWall(3, 0.25, 3, 0.3, 6);
-            createWall(0, 0.25, -2, 6, 0.3);
-            createWall(0, 0.25, 2, 6, 0.3);
-            createWall(-2, 0.25, 0, 0.3, 4);
+            createWall(-4, 0.25, -4, 0.3, 8);
+            createWall(4, 0.25, 4, 0.3, 8);
+            createWall(0, 0.25, -3, 8, 0.3);
+            createWall(0, 0.25, 3, 8, 0.3);
+            createWall(-3, 0.25, 0, 0.3, 6);
         } else if (complexity === 'complex') {
-            createWall(-3, 0.25, -3, 0.3, 8);
-            createWall(3, 0.25, 3, 0.3, 8);
-            createWall(-1, 0.25, -2, 6, 0.3);
-            createWall(1, 0.25, 2, 6, 0.3);
-            createWall(-2, 0.25, 0, 0.3, 6);
-            createWall(2, 0.25, 0, 0.3, 6);
+            createWall(-4, 0.25, -4, 0.3, 10);
+            createWall(4, 0.25, 4, 0.3, 10);
+            createWall(-2, 0.25, -3, 8, 0.3);
+            createWall(2, 0.25, 3, 8, 0.3);
+            createWall(-3, 0.25, 0, 0.3, 8);
+            createWall(3, 0.25, 0, 0.3, 8);
         }
     }
     
-    createHoles(count) {
-        for (let i = 0; i < count; i++) {
-            const holeGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.6, 16);
-            const holeMat = new THREE.MeshStandardMaterial({ 
-                color: 0x000000,
-                emissive: 0x220000
-            });
-            const hole = new THREE.Mesh(holeGeo, holeMat);
-            hole.position.set(
-                (Math.random() - 0.5) * 10,
-                2,
-                (Math.random() - 0.5) * 10
-            );
-            this.mazeGroup.add(hole);
-            this.holes.push(hole);
-        }
-    }
-    
-    createExit() {
-        const exitGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.3, 16);
-        const exitMat = new THREE.MeshStandardMaterial({ 
+    createGoalHole() {
+        // Trou OBJECTIF (lumineux et attirant) - UN SEUL
+        const holeGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.8, 32);
+        const holeMat = new THREE.MeshStandardMaterial({ 
             color: 0x00ff00,
             emissive: 0x00ff00,
+            emissiveIntensity: 0.8,
             transparent: true,
-            opacity: 0.8
+            opacity: 0.9
         });
-        this.exit = new THREE.Mesh(exitGeo, exitMat);
-        this.exit.position.set(4.5, 2.4, 4.5);
-        this.mazeGroup.add(this.exit);
+        const hole = new THREE.Mesh(holeGeo, holeMat);
+        
+        // Position au coin opposÃ© de la bille (en haut Ã  droite)
+        hole.position.set(6.5, 5, 6.5);
+        this.mazeGroup.add(hole);
+        this.holes.push(hole);
+        
+        // Ajouter une lumiÃ¨re au trou pour le rendre visible
+        const holeLight = new THREE.PointLight(0x00ff00, 2, 8);
+        holeLight.position.set(6.5, 5.5, 6.5);
+        this.mazeGroup.add(holeLight);
     }
     
     clear() {
