@@ -10,12 +10,11 @@ class EnemyManager {
     createEnemies(count) {
         this.clear();
         
-           for (let i = 0; i < count; i++) {
-            const x = (Math.random() - 0.5) * 20; // Zone plus large pour plateforme 24x24
-            const y = 6.2; // Plus haut (y=5 + 1.2)
-            const z = (Math.random() - 0.5) * 20;
+        for (let i = 0; i < count; i++) {
+            const x = (Math.random() - 0.5) * 14;
+            const y = 1.2;
+            const z = (Math.random() - 0.5) * 14;
             
-            // Ennemis PLUS GROS (0.8 au lieu de 0.6)
             const enemyGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
             const enemyMat = new THREE.MeshStandardMaterial({ 
                 color: 0xff0000,
@@ -27,24 +26,29 @@ class EnemyManager {
             enemy.position.set(x, y, z);
             enemy.castShadow = true;
             
-            // Données de mouvement (plus rapides)
+            // DONNÉES DE MOUVEMENT
             enemy.userData.velocity = new THREE.Vector3(
                 (Math.random() - 0.5) * 0.08,
                 0,
                 (Math.random() - 0.5) * 0.08
             );
             enemy.userData.changeDirectionTimer = Math.random() * 100;
+            enemy.userData.isEnemy = true;
+            enemy.userData.damage = 1;
             
             this.mazeGroup.add(enemy);
             this.enemies.push(enemy);
         }
         
+        console.log(`👾 ${count} ennemis créés`);
         return this.enemies;
     }
     
     clear() {
         this.enemies.forEach(enemy => {
             this.mazeGroup.remove(enemy);
+            if (enemy.geometry) enemy.geometry.dispose();
+            if (enemy.material) enemy.material.dispose();
         });
         this.enemies = [];
     }
@@ -54,7 +58,6 @@ class EnemyManager {
     }
 }
 
-// Export pour utilisation dans main.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = EnemyManager;
 }

@@ -1,7 +1,5 @@
-// main.js - Orchestrateur principal du jeu
-// Ce fichier coordonne tous les gestionnaires
+// main.js - Orchestrateur principal SIMPLIFIÉ
 
-// Gestionnaires de temps et points
 class TimeManager {
     constructor(updateTimer, gameOver) {
         this.timer = 0;
@@ -36,16 +34,18 @@ class PointsManager {
         this.updateUI = updateUI;
     }
     
-    addCrystal(points = 50) {
+    addCrystal(points = 10) {
         this.collectedCrystals++;
         this.score += points;
         this.updateUI();
+        this.showFeedback('💎 +10 pts', 'crystal');
     }
     
     addFall(penalty = 20) {
         this.falls++;
         this.score = Math.max(0, this.score - penalty);
         this.updateUI();
+        this.showFeedback('💥 -20 pts', 'damage');
     }
     
     addLevelBonus(levelBonus, crystalBonus, timeBonus) {
@@ -58,16 +58,36 @@ class PointsManager {
         this.falls = 0;
         this.updateUI();
     }
+    
+    showFeedback(message, type) {
+        const feedback = document.createElement('div');
+        feedback.textContent = message;
+        feedback.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: ${type === 'crystal' ? '#00ffff' : '#ff0000'};
+            text-shadow: 0 0 20px ${type === 'crystal' ? '#00ffff' : '#ff0000'};
+            pointer-events: none;
+            z-index: 9999;
+            animation: feedbackPulse 0.8s ease-out;
+        `;
+        document.body.appendChild(feedback);
+        setTimeout(() => feedback.remove(), 800);
+    }
 }
 
-// Configuration Three.js
+// ========== CONFIGURATION THREE.JS ==========
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a1e);
 scene.fog = new THREE.Fog(0x0a0a1e, 10, 50);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 25, 25); // Vue de dessus en diagonale
-camera.lookAt(0, 5, 0); // Regarde le centre de la plateforme (y=5)
+camera.position.set(0, 15, 20);
+camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -83,24 +103,18 @@ directionalLight.position.set(5, 10, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// Variables de jeu
+// ========== VARIABLES ==========
 let gameState = 'menu';
 let difficulty = 'beginner';
 let level = 1;
 
-// Groupe du labyrinthe
 const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
-
-// Paramètres de difficulté (MOINS D'ENNEMIS)
 const difficultySettings = {
-    beginner: { time: 180, enemyCount: 2, crystalCount: 3, wallComplexity: 'simple', holeCount: 2 },
-    intermediate: { time: 120, enemyCount: 4, crystalCount: 5, wallComplexity: 'medium', holeCount: 3 },
-    expert: { time: 90, enemyCount: 6, crystalCount: 7, wallComplexity: 'complex', holeCount: 4 }
+    beginner: { time: 180, enemyCount: 2, crystalCount: 3 }
 };
 
-// Gestionnaires
 let timeManager;
 let pointsManager;
 let platformManager;
@@ -110,7 +124,7 @@ let physicsEngine;
 let ball = null;
 let ballLight = null;
 
-// Contrôles
+// ========== CONTRÔLES ==========
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
@@ -142,10 +156,10 @@ renderer.domElement.addEventListener('mouseup', () => {
 renderer.domElement.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (gameState !== 'playing') return;
-    camera.position.y = Math.max(15, Math.min(30, camera.position.y + e.deltaY * 0.01)); // Limites ajustées
+    camera.position.y = Math.max(10, Math.min(20, camera.position.y + e.deltaY * 0.01));
 });
 
-// Fonctions UI
+// ========== UI ==========
 function updateTimerUI(timer) {
     const minutes = Math.floor(timer / 60);
     const seconds = timer % 60;
@@ -160,14 +174,13 @@ function updateUI() {
     document.getElementById('falls').textContent = pointsManager.falls;
 }
 
-// Création de la bille
+// ========== BILLE ==========
 function createBall() {
     if (ball) {
         mazeGroup.remove(ball);
         if (ballLight) scene.remove(ballLight);
     }
     
-    // Bille PLUS GROSSE (0.5 au lieu de 0.4)
     const ballGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const ballMat = new THREE.MeshStandardMaterial({ 
         color: 0xffff00,
@@ -175,11 +188,10 @@ function createBall() {
         emissiveIntensity: 0.8
     });
     ball = new THREE.Mesh(ballGeo, ballMat);
-    ball.position.set(-7, 6, -7); // Position de départ en bas à gauche, hauteur ajustée
+    ball.position.set(-7, 0.5, -7);
     ball.castShadow = true;
     mazeGroup.add(ball);
     
-    // Lumière de la bille plus forte
     ballLight = new THREE.PointLight(0xffff00, 1.5, 12);
     ballLight.position.copy(ball.position);
     scene.add(ballLight);
@@ -187,69 +199,40 @@ function createBall() {
     return ball;
 }
 
-// Gestion du jeu
+// ========== GAME LOGIC ==========
 function startGame(diff) {
     console.log('=== DÉMARRAGE DU JEU ===');
-    console.log('Difficulté:', diff);
     
     difficulty = diff;
     level = 1;
     
-    try {
-        // Initialisation des gestionnaires
-        pointsManager = new PointsManager(updateUI);
-        timeManager = new TimeManager(updateTimerUI, gameOver);
-        platformManager = new PlatformManager(scene, mazeGroup, difficultySettings);
-        enemyManager = new EnemyManager(scene, mazeGroup);
-        crystalManager = new CrystalManager(scene, mazeGroup);
-        
-        console.log('Gestionnaires créés');
-        
-        // Création du niveau
-        const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-        console.log('Plateforme créée, murs:', walls.length, 'trous:', holes.length);
-        
-        const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
-        console.log('Ennemis créés:', enemies.length);
-        
-        const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
-        console.log('Cristaux créés:', crystals.length);
-        
-        // Création de la bille
-        createBall();
-        console.log('Bille créée à la position:', ball.position);
-        
-        // Initialisation du moteur physique
-        physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
-        console.log('Moteur physique initialisé');
-        
-        // Callbacks du moteur physique
-        physicsEngine.onFall = () => {
-            pointsManager.addFall();
-        };
-        physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-        physicsEngine.onLevelComplete = () => levelComplete();
-        
-        // Affichage
-        document.getElementById('startMenu').style.display = 'none';
-        document.getElementById('gameUI').style.display = 'block';
-        
-        gameState = 'playing';
-        updateUI();
-        timeManager.startTimer(difficultySettings[difficulty].time);
-        
-        console.log('=== JEU DÉMARRÉ AVEC SUCCÈS ===');
-    } catch (error) {
-        console.error('ERREUR LORS DU DÉMARRAGE:', error);
-        alert('Erreur: ' + error.message);
-    }
-}
-
-function unlockDifficulties() {
-    const btnIntermediate = document.getElementById('btn-intermediate');
-    const btnExpert = document.getElementById('btn-expert');
-    if (btnIntermediate) btnIntermediate.disabled = false;
-    if (btnExpert) btnExpert.disabled = false;
+    pointsManager = new PointsManager(updateUI);
+    timeManager = new TimeManager(updateTimerUI, gameOver);
+    platformManager = new PlatformManager(scene, mazeGroup, difficultySettings);
+    enemyManager = new EnemyManager(scene, mazeGroup);
+    crystalManager = new CrystalManager(scene, mazeGroup);
+    
+    const { walls, holes, exit } = platformManager.createPlatform(difficulty);
+    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
+    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
+    
+    createBall();
+    
+    physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
+    
+    // Callbacks
+    physicsEngine.onFall = () => pointsManager.addFall();
+    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+    physicsEngine.onLevelComplete = () => levelComplete();
+    
+    document.getElementById('startMenu').style.display = 'none';
+    document.getElementById('gameUI').style.display = 'block';
+    
+    gameState = 'playing';
+    updateUI();
+    timeManager.startTimer(difficultySettings[difficulty].time);
+    
+    console.log('=== JEU DÉMARRÉ ===');
 }
 
 function levelComplete() {
@@ -259,7 +242,7 @@ function levelComplete() {
     gameState = 'victory';
     
     const levelBonus = 200;
-    const crystalBonus = pointsManager.collectedCrystals * 50;
+    const crystalBonus = pointsManager.collectedCrystals * 10;
     const timeBonus = timeManager.timer * 10;
     
     pointsManager.addLevelBonus(levelBonus, crystalBonus, timeBonus);
@@ -270,26 +253,24 @@ function levelComplete() {
     document.getElementById('crystalBonus').textContent = `+${crystalBonus} pts`;
     document.getElementById('timeBonus').textContent = `+${timeBonus} pts`;
     document.getElementById('totalScore').textContent = pointsManager.score;
-    
-    if (difficulty === 'beginner' && level === 1) unlockDifficulties();
 }
 
 function nextLevel() {
     level++;
     pointsManager.reset();
     
-    // Recréation du niveau
     const { walls, holes, exit } = platformManager.createPlatform(difficulty);
     const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
     const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
     
     createBall();
     
-    // Réinitialisation du moteur physique
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     physicsEngine.onFall = () => pointsManager.addFall();
     physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
     physicsEngine.onLevelComplete = () => levelComplete();
+    
+    camera.position.y = 15;
     
     document.getElementById('victory').style.display = 'none';
     document.getElementById('gameUI').style.display = 'block';
@@ -311,7 +292,6 @@ function gameOver(message) {
 
 function returnToMenu() {
     if (timeManager) timeManager.stopTimer();
-    
     if (platformManager) platformManager.clear();
     if (enemyManager) enemyManager.clear();
     if (crystalManager) crystalManager.clear();
@@ -325,6 +305,8 @@ function returnToMenu() {
         ballLight = null;
     }
     
+    camera.position.y = 15;
+    
     document.getElementById('gameOver').style.display = 'none';
     document.getElementById('victory').style.display = 'none';
     document.getElementById('startMenu').style.display = 'flex';
@@ -332,34 +314,28 @@ function returnToMenu() {
     gameState = 'menu';
 }
 
-// Boucle principale
+// ========== BOUCLE PRINCIPALE ==========
 function animate() {
     requestAnimationFrame(animate);
     
     if (gameState === 'playing' && physicsEngine) {
         physicsEngine.update();
         
-        // Mise à jour de la lumière de la bille
         if (ballLight && ball) {
             ballLight.position.copy(ball.position);
         }
         
-        // Caméra fixe regardant le centre de la plateforme
-        camera.lookAt(0, 5, 0);
+        camera.lookAt(0, 0, 0);
     }
     
     renderer.render(scene, camera);
 }
 
-// Événements - Attendre que le DOM soit chargé
+// ========== ÉVÉNEMENTS ==========
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM chargé, initialisation du jeu');
-    
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
         if (btn.dataset.difficulty && !btn.disabled) {
-            btn.addEventListener('click', () => {
-                startGame(btn.dataset.difficulty);
-            });
+            btn.addEventListener('click', () => startGame(btn.dataset.difficulty));
         }
     });
 
@@ -373,13 +349,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (returnMenuVictoryBtn) returnMenuVictoryBtn.addEventListener('click', returnToMenu);
     if (quitGameBtn) quitGameBtn.addEventListener('click', returnToMenu);
     
-    console.log('Jeu initialisé avec succès');
-    
-    // Démarrage de la boucle d'animation
     animate();
 });
 
-// Responsive
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
