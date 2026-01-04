@@ -7,42 +7,51 @@ class EnemyManager {
         this.enemies = [];
     }
     
-    createEnemies(count) {
-        this.clear();
-        
-        for (let i = 0; i < count; i++) {
-            const x = (Math.random() - 0.5) * 14;
-            const y = 1.2;
-            const z = (Math.random() - 0.5) * 14;
-            
-            const enemyGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-            const enemyMat = new THREE.MeshStandardMaterial({ 
-                color: 0xff0000,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.5
-            });
-            
-            const enemy = new THREE.Mesh(enemyGeo, enemyMat);
-            enemy.position.set(x, y, z);
-            enemy.castShadow = true;
-            
-            // DONNÉES DE MOUVEMENT
-            enemy.userData.velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.08,
-                0,
-                (Math.random() - 0.5) * 0.08
-            );
-            enemy.userData.changeDirectionTimer = Math.random() * 100;
-            enemy.userData.isEnemy = true;
-            enemy.userData.damage = 1;
-            
-            this.mazeGroup.add(enemy);
-            this.enemies.push(enemy);
-        }
-        
-        console.log(`👾 ${count} ennemis créés`);
-        return this.enemies;
+    createEnemies(count, level = 1) {
+    this.clear();
+    
+    // Position Y selon le niveau
+    let yPosition;
+    if (level === 1) {
+        yPosition = 1.2; // Plateforme haute
+    } else if (level === 2) {
+        yPosition = -18.8; // Plateforme milieu
+    } else {
+        yPosition = -38.8; // Plateforme finale
     }
+    
+    for (let i = 0; i < count; i++) {
+        const x = (Math.random() - 0.5) * 14;
+        const z = (Math.random() - 0.5) * 14;
+        
+        const enemyGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const enemyMat = new THREE.MeshStandardMaterial({ 
+            color: 0xff0000,
+            emissive: 0xff0000,
+            emissiveIntensity: 0.5
+        });
+        
+        const enemy = new THREE.Mesh(enemyGeo, enemyMat);
+        enemy.position.set(x, yPosition, z);
+        enemy.castShadow = true;
+        
+        enemy.userData.velocity = new THREE.Vector3(
+            (Math.random() - 0.5) * 0.08,
+            0,
+            (Math.random() - 0.5) * 0.08
+        );
+        enemy.userData.changeDirectionTimer = Math.random() * 100;
+        enemy.userData.isEnemy = true;
+        enemy.userData.damage = 1;
+        enemy.userData.level = level; // 🆕 Ajouter le niveau
+        
+        this.mazeGroup.add(enemy);
+        this.enemies.push(enemy);
+    }
+    
+    console.log(`👾 ${count} ennemis créés au niveau ${level} (y=${yPosition})`);
+    return this.enemies;
+}
     
     clear() {
         this.enemies.forEach(enemy => {

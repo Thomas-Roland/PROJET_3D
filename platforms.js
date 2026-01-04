@@ -56,12 +56,11 @@ class PlatformManager {
         // Bordures
         this.addUpperPlatformBorders(platformGroup);
 
-        // Trou
-        if (withHole) {
-            const holePosition =
-                type === "middle"
-                    ? new THREE.Vector3(-6, 0.51, -6) // 🔵 NOUVELLE POSITION (MILIEU)
-                    : new THREE.Vector3(6, 0.51, 6);   // 🔴 POSITION STANDARD (HAUT)
+// Trou
+if (withHole) {
+    const holePosition = type === "middle"
+        ? new THREE.Vector3(0, 0.51, 0)  // 🆕 AU CENTRE de la plateforme milieu
+        : new THREE.Vector3(6, 0.51, 6);
 
             const holeGeo = new THREE.CircleGeometry(1.5, 32);
             const holeMat = new THREE.MeshStandardMaterial({
@@ -100,6 +99,20 @@ class PlatformManager {
                 holePosition.z
             );
             platformGroup.add(light);
+
+            // 🔍 DEBUG : Marqueur visuel GÉANT + log détaillé
+            const markerGeo = new THREE.SphereGeometry(1.0, 16, 16); // Plus gros
+            const markerMat = new THREE.MeshBasicMaterial({
+                color: 0xff00ff,
+                transparent: true,
+                opacity: 0.9
+            });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.position.set(holePosition.x, holePosition.y + 3, holePosition.z);
+            platformGroup.add(marker);
+
+            console.log(`🎯 Trou ${type} créé - Position locale: (${holePosition.x}, ${holePosition.y}, ${holePosition.z})`);
+            console.log(`🎯 Position MONDIALE attendue: (${holePosition.x}, ${yPosition + holePosition.y}, ${holePosition.z})`);
         }
 
         this.mazeGroup.add(platformGroup);
@@ -181,13 +194,11 @@ class PlatformManager {
             this.addWallToGroup(platformGroup, 0, 1, -6, 10, 2, 1, mat);
         }
 
-        // 🔵 PLATEFORME MILIEU (nouvelle disposition)
-        if (type === "middle") {
-            this.addWallToGroup(platformGroup, 0, 1, -2, 12, 2, 1, mat);
-            this.addWallToGroup(platformGroup, -4, 1, 3, 1, 2, 8, mat);
-            this.addWallToGroup(platformGroup, 4, 1, -4, 1, 2, 6, mat);
-            this.addWallToGroup(platformGroup, 0, 1, 5, 6, 2, 1, mat);
-        }
+        // 🔵 PLATEFORME MILIEU (SIMPLIFIÉ pour accès facile au trou)
+if (type === "middle") {
+    // UN SEUL mur pour laisser encore plus d'espace
+    this.addWallToGroup(platformGroup, 0, 1, 3, 10, 2, 1, mat);
+}
     }
 
     // ===== WALL HELPER =====

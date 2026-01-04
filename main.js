@@ -112,7 +112,7 @@ const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
 const difficultySettings = {
-    beginner: { time: 180, enemyCount: 2, crystalCount: 3 }
+    beginner: { time: 180, enemyCount: 2, crystalCount: 3, wallComplexity: 'easy' }
 };
 
 let timeManager;
@@ -190,7 +190,7 @@ function createBall() {
     ball = new THREE.Mesh(ballGeo, ballMat);
     ball.position.set(-7, 0.5, -7);
     ball.castShadow = true;
-scene.add(ball); // âœ… La bille n'est plus dans le groupe qui tourne !
+    mazeGroup.add(ball); // ✅ CORRECTION ICI
     
     ballLight = new THREE.PointLight(0xffff00, 1.5, 12);
     ballLight.position.copy(ball.position);
@@ -213,16 +213,35 @@ function startGame(diff) {
     crystalManager = new CrystalManager(scene, mazeGroup);
     
     const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
-    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
+    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, 1);
+    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, 1);
     
     createBall();
     
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     
     physicsEngine.onFall = () => pointsManager.addFall();
-    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-    physicsEngine.onLevelComplete = () => levelComplete();
+physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+physicsEngine.onLevelComplete = () => levelComplete();
+
+// 🆕 CALLBACK CHANGEMENT DE PLATEFORME
+physicsEngine.onPlatformChange = (platformLevel) => {
+    console.log(`🎯 Changement vers plateforme ${platformLevel}`);
+    
+    // Supprimer anciens ennemis/cristaux
+    enemyManager.clear();
+    crystalManager.clear();
+    
+    // Recréer sur la nouvelle plateforme
+    const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
+    const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
+    
+    // Mettre à jour le moteur physique
+    physicsEngine.enemies = newEnemies;
+    physicsEngine.crystals = newCrystals;
+    
+    console.log(`✅ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
+};
     
     document.getElementById('startMenu').style.display = 'none';
     document.getElementById('gameUI').style.display = 'block';
@@ -259,15 +278,31 @@ function nextLevel() {
     pointsManager.reset();
     
     const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount);
-    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount);
+    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, level);
+    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, level);
     
     createBall();
     
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     physicsEngine.onFall = () => pointsManager.addFall();
-    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-    physicsEngine.onLevelComplete = () => levelComplete();
+physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+physicsEngine.onLevelComplete = () => levelComplete();
+
+// 🆕 CALLBACK CHANGEMENT DE PLATEFORME (aussi pour nextLevel)
+physicsEngine.onPlatformChange = (platformLevel) => {
+    console.log(`🎯 Changement vers plateforme ${platformLevel}`);
+    
+    enemyManager.clear();
+    crystalManager.clear();
+    
+    const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
+    const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
+    
+    physicsEngine.enemies = newEnemies;
+    physicsEngine.crystals = newCrystals;
+    
+    console.log(`✅ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
+};
     
     camera.position.y = 20;
     
