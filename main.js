@@ -1,4 +1,4 @@
-// main.js - Orchestrateur principal SIMPLIFIÉ
+// main.js - Orchestrateur principal SIMPLIFIÃ‰
 
 class TimeManager {
     constructor(updateTimer, gameOver) {
@@ -16,7 +16,7 @@ class TimeManager {
             this.updateTimer(this.timer);
             if (this.timer <= 0) {
                 clearInterval(this.timerInterval);
-                this.gameOver('Temps écoulé !');
+                this.gameOver('Temps Ã©coulÃ© !');
             }
         }, 1000);
     }
@@ -38,14 +38,14 @@ class PointsManager {
         this.collectedCrystals++;
         this.score += points;
         this.updateUI();
-        this.showFeedback('💎 +10 pts', 'crystal');
+        this.showFeedback('ðŸ’Ž +10 pts', 'crystal');
     }
     
     addFall(penalty = 20) {
         this.falls++;
         this.score = Math.max(0, this.score - penalty);
         this.updateUI();
-        this.showFeedback('💥 -20 pts', 'damage');
+        this.showFeedback('ðŸ’¥ -20 pts', 'damage');
     }
     
     addLevelBonus(levelBonus, crystalBonus, timeBonus) {
@@ -86,7 +86,7 @@ scene.background = new THREE.Color(0x0a0a1e);
 scene.fog = new THREE.Fog(0x0a0a1e, 10, 50);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 15, 20);
+camera.position.set(0, 20, 25);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -94,7 +94,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Lumières
+// LumiÃ¨res
 const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
 scene.add(ambientLight);
 
@@ -124,7 +124,7 @@ let physicsEngine;
 let ball = null;
 let ballLight = null;
 
-// ========== CONTRÔLES ==========
+// ========== CONTRÃ”LES ==========
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
@@ -155,8 +155,8 @@ renderer.domElement.addEventListener('mouseup', () => {
 
 renderer.domElement.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (gameState !== 'playing') return;
-    camera.position.y = Math.max(10, Math.min(20, camera.position.y + e.deltaY * 0.01));
+    // DÃ©sactiver le zoom pendant le jeu
+    // La camÃ©ra suit automatiquement la bille
 });
 
 // ========== UI ==========
@@ -190,7 +190,7 @@ function createBall() {
     ball = new THREE.Mesh(ballGeo, ballMat);
     ball.position.set(-7, 0.5, -7);
     ball.castShadow = true;
-    mazeGroup.add(ball);
+scene.add(ball); // âœ… La bille n'est plus dans le groupe qui tourne !
     
     ballLight = new THREE.PointLight(0xffff00, 1.5, 12);
     ballLight.position.copy(ball.position);
@@ -201,7 +201,7 @@ function createBall() {
 
 // ========== GAME LOGIC ==========
 function startGame(diff) {
-    console.log('=== DÉMARRAGE DU JEU ===');
+    console.log('=== DÃ‰MARRAGE DU JEU ===');
     
     difficulty = diff;
     level = 1;
@@ -220,7 +220,6 @@ function startGame(diff) {
     
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     
-    // Callbacks
     physicsEngine.onFall = () => pointsManager.addFall();
     physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
     physicsEngine.onLevelComplete = () => levelComplete();
@@ -232,7 +231,7 @@ function startGame(diff) {
     updateUI();
     timeManager.startTimer(difficultySettings[difficulty].time);
     
-    console.log('=== JEU DÉMARRÉ ===');
+    console.log('=== JEU DÃ‰MARRÃ‰ ===');
 }
 
 function levelComplete() {
@@ -249,7 +248,7 @@ function levelComplete() {
     
     document.getElementById('gameUI').style.display = 'none';
     document.getElementById('victory').style.display = 'flex';
-    document.getElementById('victoryMessage').textContent = `Niveau ${level} terminé !`;
+    document.getElementById('victoryMessage').textContent = `Niveau ${level} terminÃ© !`;
     document.getElementById('crystalBonus').textContent = `+${crystalBonus} pts`;
     document.getElementById('timeBonus').textContent = `+${timeBonus} pts`;
     document.getElementById('totalScore').textContent = pointsManager.score;
@@ -270,7 +269,7 @@ function nextLevel() {
     physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
     physicsEngine.onLevelComplete = () => levelComplete();
     
-    camera.position.y = 15;
+    camera.position.y = 20;
     
     document.getElementById('victory').style.display = 'none';
     document.getElementById('gameUI').style.display = 'block';
@@ -305,7 +304,7 @@ function returnToMenu() {
         ballLight = null;
     }
     
-    camera.position.y = 15;
+    camera.position.y = 20;
     
     document.getElementById('gameOver').style.display = 'none';
     document.getElementById('victory').style.display = 'none';
@@ -314,7 +313,6 @@ function returnToMenu() {
     gameState = 'menu';
 }
 
-// ========== BOUCLE PRINCIPALE ==========
 function animate() {
     requestAnimationFrame(animate);
     
@@ -325,13 +323,31 @@ function animate() {
             ballLight.position.copy(ball.position);
         }
         
-        camera.lookAt(0, 0, 0);
+        // ðŸ“¹ CAMÃ‰RA SUIT AUTOMATIQUEMENT LA BILLE
+        if (ball) {
+            // Position Y : au-dessus de la bille
+            const targetCameraY = ball.position.y + 15;
+            const diffY = targetCameraY - camera.position.y;
+            if (Math.abs(diffY) > 0.5) {
+                camera.position.y += diffY * 0.12;
+            }
+            
+            // Position X et Z : VUE DE FACE CENTRÃ‰E
+            const targetCameraX = 0;  // Bien au centre
+            const targetCameraZ = 25; // Distance fixe
+            
+            camera.position.x = 0; // Fixe X
+            camera.position.z = 25; // Fixe Z
+            
+            // ðŸ‘ï¸ CAMÃ‰RA REGARDE LE CENTRE EXACT
+            camera.lookAt(0, camera.position.y - 15, 0);
+        }
     }
     
     renderer.render(scene, camera);
 }
 
-// ========== ÉVÉNEMENTS ==========
+// ========== Ã‰VÃ‰NEMENTS ==========
 window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
         if (btn.dataset.difficulty && !btn.disabled) {

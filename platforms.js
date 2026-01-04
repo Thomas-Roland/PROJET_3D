@@ -18,15 +18,15 @@ class PlatformManager {
 
         const settings = this.difficultySettings[difficulty];
 
-        // Plateforme haute descendue à y=0 (au lieu de y=5)
+        // Plateforme haute
         const topPlatform = this.createUpperPlatform(0, true, "top");
         this.createWalls(settings.wallComplexity, topPlatform, "top");
 
-        // Plateforme milieu descendue à y=-9 (au lieu de y=-4)
-        const middlePlatform = this.createUpperPlatform(-9, true, "middle");
+        // Plateforme milieu (beaucoup plus bas)
+        const middlePlatform = this.createUpperPlatform(-20, true, "middle");
         this.createWalls(settings.wallComplexity, middlePlatform, "middle");
 
-        // Plateforme finale descendue à y=-17 (au lieu de y=-12)
+        // Plateforme finale (encore plus bas)
         const bottomPlatform = this.createLowerPlatform();
 
         return {
@@ -111,7 +111,7 @@ class PlatformManager {
     // ===== PLATEFORME FINALE =====
     createLowerPlatform() {
         const platformGroup = new THREE.Group();
-        platformGroup.position.set(6, -17, 6); // Descendue de y=-12 à y=-17
+        platformGroup.position.set(6, -40, 6); // Beaucoup plus bas
 
         const geo = new THREE.BoxGeometry(12, 1, 12);
         const mat = new THREE.MeshStandardMaterial({

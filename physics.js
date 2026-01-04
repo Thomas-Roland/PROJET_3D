@@ -1,4 +1,4 @@
-// physics.js - Moteur physique simplifié et fonctionnel
+// physics.js - Moteur physique simplifiÃ© et fonctionnel
 
 class PhysicsEngine {
     constructor(ball, mazeGroup, walls, holes, enemies, crystals, exit) {
@@ -47,62 +47,75 @@ class PhysicsEngine {
             this.ballVelocity.x *= 0.95;
             this.ballVelocity.z *= 0.95;
             
-            if (this.ball.position.y <= -16.5) {
-                this.ball.position.y = -16.5;
+            // Atterrissage sur plateforme MILIEU
+            if (this.ball.position.y <= -19.5 && this.ball.position.y > -22) {
+                this.ball.position.y = -19.5;
                 this.ballVelocity.y = 0;
                 this.ballVelocity.x *= 0.5;
                 this.ballVelocity.z *= 0.5;
                 this.isFalling = false;
+                console.log("âœ… Atterrissage plateforme MILIEU");
+                if (this.onCameraUpdate) this.onCameraUpdate(-19.5);
+            } 
+            // Atterrissage sur plateforme FINALE
+            else if (this.ball.position.y <= -39.5) {
+                this.ball.position.y = -39.5;
+                this.ballVelocity.y = 0;
+                this.ballVelocity.x *= 0.5;
+                this.ballVelocity.z *= 0.5;
+                this.isFalling = false;
+                console.log("âœ… Atterrissage plateforme FINALE");
+                if (this.onCameraUpdate) this.onCameraUpdate(-39.5);
             }
             return;
         }
         
-        // GRAVITÉ VERTICALE (réduite pour éviter chute spontanée)
+        // GRAVITÃ‰ VERTICALE (rÃ©duite pour Ã©viter chute spontanÃ©e)
         this.ballVelocity.y -= 0.015;
         
-        // GRAVITÉ HORIZONTALE (inclinaison)
-        const gravity = 0.18;
+        const gravity = 0.12;  // â† CHANGÃ‰
         this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
         this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
         
-        // FRICTION
-        this.ballVelocity.x *= 0.985;
-        this.ballVelocity.z *= 0.985;
+        this.ballVelocity.x *= 0.86;  // â† CHANGÃ‰
+        this.ballVelocity.z *= 0.86;  // â† CHANGÃ‰
         
-        // LIMITE DE VITESSE
-        const maxSpeed = 0.4;
+        const maxSpeed = 0.20;  // â† CHANGÃ‰
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
         if (speed > maxSpeed) {
             this.ballVelocity.x = (this.ballVelocity.x / speed) * maxSpeed;
             this.ballVelocity.z = (this.ballVelocity.z / speed) * maxSpeed;
         }
         
-        // DÉPLACEMENT
+        // DÃ‰PLACEMENT
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.ball.position.z += this.ballVelocity.z;
         
-        // COLLISION AVEC LE SOL - La bille doit rester sur la plateforme
+        // COLLISION AVEC LE SOL - DÃ©tection prÃ©cise par plateforme
         let groundY;
-        if (this.ball.position.y < -10) {
-            // Sur plateforme du bas
-            groundY = -16.5;
-        } else if (this.ball.position.y < -5) {
-            // En transition (entre les plateformes) - plateforme milieu
-            groundY = -8.5;
-        } else {
-            // Sur plateforme du haut
+        
+        // Plateforme FINALE (y = -39.5)
+        if (this.ball.position.y < -30) {
+            groundY = -39.5;
+        } 
+        // Plateforme MILIEU (y = -19.5)
+        else if (this.ball.position.y < -15) {
+            groundY = -19.5;
+        } 
+        // Plateforme HAUTE (y = 0.5)
+        else {
             groundY = 0.5;
         }
         
-        // La bille touche le sol
-        if (this.ball.position.y <= groundY + this.ballRadius) {
+        // EmpÃªcher de traverser le sol (SAUF si en chute dans un trou)
+        if (!this.isFalling && this.ball.position.y <= groundY + this.ballRadius) {
             this.ball.position.y = groundY + this.ballRadius;
             
             if (this.ballVelocity.y < -0.15) {
                 this.ballVelocity.y *= -0.3; // Rebond
             } else {
-                this.ballVelocity.y = 0; // Arrêt complet
+                this.ballVelocity.y = 0; // ArrÃªt complet
             }
         }
         
@@ -124,14 +137,15 @@ class PhysicsEngine {
         this.checkCrystalCollisions();
         this.checkExitCollision();
         
-        // DÉPLACEMENT ENNEMIS
+        // DÃ‰PLACEMENT ENNEMIS
         this.updateEnemies();
         
         // ROTATION CRISTAUX
         this.rotateCrystals();
         
-        // TOMBE DANS LE VIDE
-        if (this.ball.position.y < -20) {
+        // TOMBE DANS LE VIDE (vraiment perdu)
+        if (this.ball.position.y < -50) {
+            console.log("ðŸ’€ GAME OVER - TombÃ© dans le vide !");
             this.resetBall();
             if (this.onFall) this.onFall();
         }
@@ -147,13 +161,14 @@ class PhysicsEngine {
             const dy = this.ball.position.y - wallWorldPos.y;
             const dz = this.ball.position.z - wallWorldPos.z;
             
-            // Ignorer si pas au même niveau
+            // Ignorer si pas au mÃªme niveau
             if (Math.abs(dy) > 2) return;
             
             const w = wall.geometry.parameters.width;
             const d = wall.geometry.parameters.depth;
+            const h = wall.geometry.parameters.height;
             
-            // Point le plus proche sur le mur
+            // Point le plus proche sur le mur (collision AABB amÃ©liorÃ©e)
             const closestX = Math.max(wallWorldPos.x - w/2, Math.min(this.ball.position.x, wallWorldPos.x + w/2));
             const closestZ = Math.max(wallWorldPos.z - d/2, Math.min(this.ball.position.z, wallWorldPos.z + d/2));
             
@@ -161,45 +176,51 @@ class PhysicsEngine {
             const distZ = this.ball.position.z - closestZ;
             const dist = Math.sqrt(distX * distX + distZ * distZ);
             
-            if (dist < this.ballRadius) {
-                // Déterminer direction de collision
+            // Collision avec marge de sÃ©curitÃ©
+            if (dist < this.ballRadius + 0.1) { // Ajout marge 0.1
+                // DÃ©terminer direction de collision
                 if (Math.abs(dx) / (w/2) > Math.abs(dz) / (d/2)) {
                     // Collision sur X
-                    this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.05);
-                    this.ballVelocity.x *= -0.4;
-                    this.ballVelocity.z *= 0.8;
+                    this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.15);
+                    this.ballVelocity.x *= -0.5; // Plus de rebond
+                    this.ballVelocity.z *= 0.7;
                 } else {
                     // Collision sur Z
-                    this.ball.position.z = wallWorldPos.z + Math.sign(dz) * (d/2 + this.ballRadius + 0.05);
-                    this.ballVelocity.z *= -0.4;
-                    this.ballVelocity.x *= 0.8;
+                    this.ball.position.z = wallWorldPos.z + Math.sign(dz) * (d/2 + this.ballRadius + 0.15);
+                    this.ballVelocity.z *= -0.5; // Plus de rebond
+                    this.ballVelocity.x *= 0.7;
                 }
             }
         });
     }
     
     checkHoleCollisions() {
-        this.holes.forEach(hole => {
-            if (!hole.userData.isFallThrough) return;
+    this.holes.forEach(hole => {
+        if (!hole.userData.isFallThrough) return;
+        
+        // Position du trou dans le monde
+        const holeWorldPos = new THREE.Vector3();
+        hole.getWorldPosition(holeWorldPos);
+        
+        const dist2D = Math.sqrt(
+            Math.pow(this.ball.position.x - holeWorldPos.x, 2) +
+            Math.pow(this.ball.position.z - holeWorldPos.z, 2)
+        );
+        
+        const holeRadius = 1.5;
+        
+        // âœ… NOUVEAU : VÃ©rifier que la bille est AU-DESSUS du trou
+        const heightDiff = this.ball.position.y - holeWorldPos.y;
+        const isAboveHole = Math.abs(heightDiff) < 1.5 && heightDiff > -0.5;
             
-            // Position du trou dans le monde
-            const holeWorldPos = new THREE.Vector3();
-            hole.getWorldPosition(holeWorldPos);
+            // Log pour debug
+        if (dist2D < 3) {
+            console.log(`ðŸ” Trou y=${holeWorldPos.y.toFixed(2)} | Bille y=${this.ball.position.y.toFixed(2)} | Dist XZ=${dist2D.toFixed(2)} | isAbove=${isAboveHole}`);
+        }
             
-            const dist2D = Math.sqrt(
-                Math.pow(this.ball.position.x - holeWorldPos.x, 2) +
-                Math.pow(this.ball.position.z - holeWorldPos.z, 2)
-            );
-            
-            const holeRadius = 1.2;
-            
-            // Vérifier si la bille est AU-DESSUS du trou (même plateforme)
-            const heightDiff = Math.abs(this.ball.position.y - holeWorldPos.y);
-            const isAboveHole = heightDiff < 1.5;
-            
-            // La bille doit être VRAIMENT au-dessus du trou pour tomber
+            // La bille doit Ãªtre VRAIMENT au-dessus du trou pour tomber
             if (dist2D < holeRadius && isAboveHole && !this.isFalling) {
-                console.log("🕳️ Bille tombe dans le trou !");
+                console.log("ðŸ•³ï¸ Bille tombe dans le trou !");
                 this.isFalling = true;
                 
                 // Attraction vers le centre du trou
@@ -223,7 +244,7 @@ class PhysicsEngine {
             
             // Collision avec l'ennemi (0.4 = rayon ennemi)
             if (dist < this.ballRadius + 0.4) {
-                console.log("💥 Collision avec ennemi - RESPAWN !");
+                console.log("ðŸ’¥ Collision avec ennemi - RESPAWN !");
                 this.resetBall();
                 if (this.onFall) this.onFall();
             }
@@ -232,13 +253,13 @@ class PhysicsEngine {
     
     checkCrystalCollisions() {
         this.crystals.forEach(crystal => {
-            // Ne pas vérifier si déjà collecté ou invisible
+            // Ne pas vÃ©rifier si dÃ©jÃ  collectÃ© ou invisible
             if (crystal.userData.collected || !crystal.visible) return;
             
             const dist = this.ball.position.distanceTo(crystal.position);
             
             if (dist < this.ballRadius + 0.7) {
-                console.log("💎 Cristal collecté !");
+                console.log("ðŸ’Ž Cristal collectÃ© !");
                 crystal.userData.collected = true;
                 
                 // Animation de disparition
@@ -264,11 +285,16 @@ class PhysicsEngine {
     }
     
     checkExitCollision() {
-        if (!this.exit || this.ball.position.y > -15) return;
+        if (!this.exit) return;
         
         // Position de la sortie dans le monde
         const exitWorldPos = new THREE.Vector3();
         this.exit.getWorldPosition(exitWorldPos);
+        
+       // âœ… VICTOIRE SEULEMENT si bille est sur la DERNIÃˆRE plateforme
+        const isOnFinalPlatform = this.ball.position.y < -38 && this.ball.position.y > -42;
+        
+        if (!isOnFinalPlatform) return; // Pas encore sur la bonne plateforme
         
         const dist = Math.sqrt(
             Math.pow(this.ball.position.x - exitWorldPos.x, 2) +
@@ -276,7 +302,7 @@ class PhysicsEngine {
         );
         
         if (dist < 2.5) {
-            console.log("🎉 NIVEAU TERMINÉ !");
+            console.log("ðŸŽ‰ NIVEAU TERMINÃ‰ - Tu es sur la plateforme finale !");
             if (this.onLevelComplete) this.onLevelComplete();
         }
     }
@@ -335,9 +361,9 @@ class PhysicsEngine {
         });
     }
     
-    // POUR COMPATIBILITÉ (non utilisé dans cette version)
+    // POUR COMPATIBILITÃ‰ (non utilisÃ© dans cette version)
     updateSolidObjects() {
-        console.log("✅ Objets initialisés");
+        console.log("âœ… Objets initialisÃ©s");
     }
 }
 
