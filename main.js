@@ -83,10 +83,10 @@ class PointsManager {
 // ========== CONFIGURATION THREE.JS ==========
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a1e);
-scene.fog = new THREE.Fog(0x0a0a1e, 10, 50);
+// âŒ BROUILLARD DÃ‰SACTIVÃ‰ pour voir toute la plateforme
 
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 20, 25);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 50, 60); // ðŸ†• CamÃ©ra BEAUCOUP plus haute et plus loin
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -112,7 +112,7 @@ const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
 const difficultySettings = {
-    beginner: { time: 180, enemyCount: 2, crystalCount: 3, wallComplexity: 'easy' }
+    beginner: { time: 180, enemyCount: 6, crystalCount: 8, wallComplexity: 'easy' } // ðŸ†• Plus d'ennemis et cristaux
 };
 
 let timeManager;
@@ -155,8 +155,6 @@ renderer.domElement.addEventListener('mouseup', () => {
 
 renderer.domElement.addEventListener('wheel', (e) => {
     e.preventDefault();
-    // DÃ©sactiver le zoom pendant le jeu
-    // La camÃ©ra suit automatiquement la bille
 });
 
 // ========== UI ==========
@@ -188,9 +186,9 @@ function createBall() {
         emissiveIntensity: 0.8
     });
     ball = new THREE.Mesh(ballGeo, ballMat);
-    ball.position.set(-7, 0.5, -7);
+    ball.position.set(-15, 0.5, -15); // ðŸ†• Position ajustÃ©e pour grande plateforme
     ball.castShadow = true;
-    mazeGroup.add(ball); // ✅ CORRECTION ICI
+    mazeGroup.add(ball);
     
     ballLight = new THREE.PointLight(0xffff00, 1.5, 12);
     ballLight.position.copy(ball.position);
@@ -221,27 +219,27 @@ function startGame(diff) {
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     
     physicsEngine.onFall = () => pointsManager.addFall();
-physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-physicsEngine.onLevelComplete = () => levelComplete();
+    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+    physicsEngine.onLevelComplete = () => levelComplete();
 
-// 🆕 CALLBACK CHANGEMENT DE PLATEFORME
-physicsEngine.onPlatformChange = (platformLevel) => {
-    console.log(`🎯 Changement vers plateforme ${platformLevel}`);
-    
-    // Supprimer anciens ennemis/cristaux
-    enemyManager.clear();
-    crystalManager.clear();
-    
-    // Recréer sur la nouvelle plateforme
-    const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
-    const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
-    
-    // Mettre à jour le moteur physique
-    physicsEngine.enemies = newEnemies;
-    physicsEngine.crystals = newCrystals;
-    
-    console.log(`✅ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
-};
+    // ðŸ†• CALLBACK CHANGEMENT DE PLATEFORME
+    physicsEngine.onPlatformChange = (platformLevel) => {
+        console.log(`ðŸŽ¯ Changement vers plateforme ${platformLevel}`);
+        
+        // Supprimer anciens ennemis/cristaux
+        enemyManager.clear();
+        crystalManager.clear();
+        
+        // RecrÃ©er sur la nouvelle plateforme
+        const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
+        const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
+        
+        // Mettre Ã  jour le moteur physique
+        physicsEngine.enemies = newEnemies;
+        physicsEngine.crystals = newCrystals;
+        
+        console.log(`âœ… ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recrÃ©Ã©s`);
+    };
     
     document.getElementById('startMenu').style.display = 'none';
     document.getElementById('gameUI').style.display = 'block';
@@ -285,26 +283,26 @@ function nextLevel() {
     
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
     physicsEngine.onFall = () => pointsManager.addFall();
-physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-physicsEngine.onLevelComplete = () => levelComplete();
+    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
+    physicsEngine.onLevelComplete = () => levelComplete();
 
-// 🆕 CALLBACK CHANGEMENT DE PLATEFORME (aussi pour nextLevel)
-physicsEngine.onPlatformChange = (platformLevel) => {
-    console.log(`🎯 Changement vers plateforme ${platformLevel}`);
+    // ðŸ†• CALLBACK CHANGEMENT DE PLATEFORME (aussi pour nextLevel)
+    physicsEngine.onPlatformChange = (platformLevel) => {
+        console.log(`ðŸŽ¯ Changement vers plateforme ${platformLevel}`);
+        
+        enemyManager.clear();
+        crystalManager.clear();
+        
+        const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
+        const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
+        
+        physicsEngine.enemies = newEnemies;
+        physicsEngine.crystals = newCrystals;
+        
+        console.log(`âœ… ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recrÃ©Ã©s`);
+    };
     
-    enemyManager.clear();
-    crystalManager.clear();
-    
-    const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
-    const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
-    
-    physicsEngine.enemies = newEnemies;
-    physicsEngine.crystals = newCrystals;
-    
-    console.log(`✅ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
-};
-    
-    camera.position.y = 20;
+    camera.position.y = 50; // ðŸ†• Hauteur camÃ©ra ajustÃ©e
     
     document.getElementById('victory').style.display = 'none';
     document.getElementById('gameUI').style.display = 'block';
@@ -339,7 +337,7 @@ function returnToMenu() {
         ballLight = null;
     }
     
-    camera.position.y = 20;
+    camera.position.y = 50; // ðŸ†• Hauteur camÃ©ra ajustÃ©e
     
     document.getElementById('gameOver').style.display = 'none';
     document.getElementById('victory').style.display = 'none';
@@ -360,22 +358,18 @@ function animate() {
         
         // ðŸ“¹ CAMÃ‰RA SUIT AUTOMATIQUEMENT LA BILLE
         if (ball) {
-            // Position Y : au-dessus de la bille
-            const targetCameraY = ball.position.y + 15;
+            // ðŸ†• CamÃ©ra TRÃˆS haute pour voir TOUTE la plateforme
+            const targetCameraY = ball.position.y + 40;
             const diffY = targetCameraY - camera.position.y;
             if (Math.abs(diffY) > 0.5) {
                 camera.position.y += diffY * 0.12;
             }
             
-            // Position X et Z : VUE DE FACE CENTRÃ‰E
-            const targetCameraX = 0;  // Bien au centre
-            const targetCameraZ = 25; // Distance fixe
+            camera.position.x = 0; // CentrÃ©
+            camera.position.z = 50; // ðŸ†• BEAUCOUP plus loin pour voir tout le labyrinthe
             
-            camera.position.x = 0; // Fixe X
-            camera.position.z = 25; // Fixe Z
-            
-            // ðŸ‘ï¸ CAMÃ‰RA REGARDE LE CENTRE EXACT
-            camera.lookAt(0, camera.position.y - 15, 0);
+            // ðŸ‘ï¸ CAMÃ‰RA REGARDE LE CENTRE
+            camera.lookAt(0, camera.position.y - 40, 0);
         }
     }
     

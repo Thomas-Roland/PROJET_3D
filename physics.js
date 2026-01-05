@@ -1,4 +1,4 @@
-// physics.js - Moteur physique simplifié et fonctionnel
+// physics.js - Moteur physique simplifiÃ© et fonctionnel
 
 class PhysicsEngine {
     constructor(ball, mazeGroup, walls, holes, enemies, crystals, exit) {
@@ -17,11 +17,11 @@ class PhysicsEngine {
         this.isFalling = false;
         
         // Callbacks
-    this.onFall = null;
-    this.onCrystalCollected = null;
-    this.onLevelComplete = null;
-    this.onCameraUpdate = null;
-    this.onPlatformChange = null; // 🆕 NOUVEAU CALLBACK
+        this.onFall = null;
+        this.onCrystalCollected = null;
+        this.onLevelComplete = null;
+        this.onCameraUpdate = null;
+        this.onPlatformChange = null;
     }
     
     setTilt(x, z) {
@@ -29,7 +29,7 @@ class PhysicsEngine {
         this.tilt.z = Math.max(-this.maxTilt, Math.min(this.maxTilt, z));
     }
     
-    resetBall(x = -7, y = 0.5, z = -7) {
+    resetBall(x = -15, y = 0.5, z = -15) {
         this.ball.position.set(x, y, z);
         this.ballVelocity.set(0, 0, 0);
         this.isFalling = false;
@@ -42,51 +42,38 @@ class PhysicsEngine {
         this.mazeGroup.rotation.x = -this.tilt.x;
         this.mazeGroup.rotation.z = -this.tilt.z;
         
-// Si la bille tombe dans un trou
-if (this.isFalling) {
-    this.ball.position.y -= 0.2;
-    this.ballVelocity.x *= 0.95;
-    this.ballVelocity.z *= 0.95;
-    
-    console.log(`🔉 Chute: y = ${this.ball.position.y.toFixed(2)}`);
-    
-    // Atterrissage plateforme MILIEU
-    if (this.ball.position.y <= -18.5 && this.ball.position.y > -21) {
-        console.log(`✅ ATTERRISSAGE PLATEFORME MILIEU (y=${this.ball.position.y.toFixed(2)})`);
-        // 🆕 GARDER la position X et Z actuelle (même axe que le trou)
-        this.ball.position.y = -18.5;
-        this.ballVelocity.set(0, 0, 0);
-        this.isFalling = false;
+        // Si la bille tombe dans un trou
+        if (this.isFalling) {
+            this.ball.position.y -= 0.2;
+            this.ballVelocity.x *= 0.95;
+            this.ballVelocity.z *= 0.95;
+            
+            console.log(`ðŸ“‰ Chute: y = ${this.ball.position.y.toFixed(2)}`);
+            
+            // Atterrissage plateforme FINALE
+            if (this.ball.position.y <= -18.5 && this.ball.position.y > -21) {
+                console.log(`âœ… ATTERRISSAGE PLATEFORME FINALE (y=${this.ball.position.y.toFixed(2)})`);
+                this.ball.position.y = -18.5;
+                this.ballVelocity.set(0, 0, 0);
+                this.isFalling = false;
+                
+                if (this.onPlatformChange) this.onPlatformChange(2);
+                if (this.onCameraUpdate) this.onCameraUpdate(-18.5);
+                return;
+            }
+            
+            return; // Ne pas exÃ©cuter le reste pendant la chute
+        }
         
-        if (this.onPlatformChange) this.onPlatformChange(2);
-        if (this.onCameraUpdate) this.onCameraUpdate(-18.5);
-        return;
-    } 
-    // Atterrissage plateforme FINALE
-    else if (this.ball.position.y <= -38.5 && this.ball.position.y > -41) {
-        console.log(`✅ ATTERRISSAGE PLATEFORME FINALE (y=${this.ball.position.y.toFixed(2)})`);
-        // 🆕 GARDER la position X et Z actuelle (même axe que le trou)
-        this.ball.position.y = -38.5;
-        this.ballVelocity.set(0, 0, 0);
-        this.isFalling = false;
-        
-        if (this.onPlatformChange) this.onPlatformChange(3);
-        if (this.onCameraUpdate) this.onCameraUpdate(-38.5);
-        return;
-    }
-    
-    return; // Ne pas exécuter le reste pendant la chute
-}
-        
-        // GRAVITÉ VERTICALE (réduite pour éviter chute spontanée)
+        // GRAVITÃ‰ VERTICALE (rÃ©duite pour Ã©viter chute spontanÃ©e)
         this.ballVelocity.y -= 0.015;
         
         const gravity = 0.12;
-        this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
-        this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
-        
-        this.ballVelocity.x *= 0.86;
-        this.ballVelocity.z *= 0.86;
+this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
+this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
+
+this.mazeGroup.rotation.x = -this.tilt.x;
+this.mazeGroup.rotation.z = this.tilt.z;
         
         const maxSpeed = 0.20;
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
@@ -95,20 +82,16 @@ if (this.isFalling) {
             this.ballVelocity.z = (this.ballVelocity.z / speed) * maxSpeed;
         }
         
-        // DÉPLACEMENT
+        // DÃ‰PLACEMENT
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.ball.position.z += this.ballVelocity.z;
         
-        // COLLISION AVEC LE SOL - Détection précise par plateforme
+        // COLLISION AVEC LE SOL - DÃ©tection prÃ©cise par plateforme
         let groundY;
         
-        // Plateforme FINALE (y = -39.5)
-        if (this.ball.position.y < -30) {
-            groundY = -39.5;
-        } 
-        // Plateforme MILIEU (y = -19.5)
-        else if (this.ball.position.y < -15) {
+        // Plateforme FINALE (y = -19.5)
+        if (this.ball.position.y < -15) {
             groundY = -19.5;
         } 
         // Plateforme HAUTE (y = 0.5)
@@ -116,19 +99,19 @@ if (this.isFalling) {
             groundY = 0.5;
         }
         
-        // Empêcher de traverser le sol (SAUF si en chute dans un trou)
+        // EmpÃªcher de traverser le sol (SAUF si en chute dans un trou)
         if (!this.isFalling && this.ball.position.y <= groundY + this.ballRadius) {
             this.ball.position.y = groundY + this.ballRadius;
             
             if (this.ballVelocity.y < -0.15) {
                 this.ballVelocity.y *= -0.3; // Rebond
             } else {
-                this.ballVelocity.y = 0; // Arrêt complet
+                this.ballVelocity.y = 0; // ArrÃªt complet
             }
         }
         
-        // LIMITES DE LA PLATEFORME
-        const limit = 9;
+        // LIMITES DE LA PLATEFORME (doublÃ©es)
+        const limit = 18;
         if (Math.abs(this.ball.position.x) > limit) {
             this.ball.position.x = Math.sign(this.ball.position.x) * limit;
             this.ballVelocity.x *= -0.7;
@@ -145,7 +128,7 @@ if (this.isFalling) {
         this.checkCrystalCollisions();
         this.checkExitCollision();
         
-        // DÉPLACEMENT ENNEMIS
+        // DÃ‰PLACEMENT ENNEMIS
         this.updateEnemies();
         
         // ROTATION CRISTAUX
@@ -153,117 +136,103 @@ if (this.isFalling) {
         
         // TOMBE DANS LE VIDE (vraiment perdu)
         if (this.ball.position.y < -50) {
-            console.log("💀 GAME OVER - Tombé dans le vide !");
+            console.log("ðŸ’€ GAME OVER - TombÃ© dans le vide !");
             this.resetBall();
             if (this.onFall) this.onFall();
         }
     }
     
     checkWallCollisions() {
-    this.walls.forEach(wall => {
-        const wallWorldPos = new THREE.Vector3();
-        wall.getWorldPosition(wallWorldPos);
-        
-        const dx = this.ball.position.x - wallWorldPos.x;
-        const dy = this.ball.position.y - wallWorldPos.y;
-        const dz = this.ball.position.z - wallWorldPos.z;
-        
-        // ✅ Ignorer si pas au même niveau (avec marge plus large)
-        if (Math.abs(dy) > 3) return;
-        
-        const w = wall.geometry.parameters.width;
-        const d = wall.geometry.parameters.depth;
-        const h = wall.geometry.parameters.height;
-        
-        const closestX = Math.max(wallWorldPos.x - w/2, Math.min(this.ball.position.x, wallWorldPos.x + w/2));
-        const closestZ = Math.max(wallWorldPos.z - d/2, Math.min(this.ball.position.z, wallWorldPos.z + d/2));
-        
-        const distX = this.ball.position.x - closestX;
-        const distZ = this.ball.position.z - closestZ;
-        const dist = Math.sqrt(distX * distX + distZ * distZ);
-        
-        if (dist < this.ballRadius + 0.1) {
-            // ✅ Collision avec rebond
-            if (Math.abs(dx) / (w/2) > Math.abs(dz) / (d/2)) {
-                this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.2);
-                this.ballVelocity.x *= -0.6;
-                this.ballVelocity.z *= 0.7;
-            } else {
-                this.ball.position.z = wallWorldPos.z + Math.sign(dz) * (d/2 + this.ballRadius + 0.2);
-                this.ballVelocity.z *= -0.6;
-                this.ballVelocity.x *= 0.7;
+        this.walls.forEach(wall => {
+            const wallWorldPos = new THREE.Vector3();
+            wall.getWorldPosition(wallWorldPos);
+            
+            const dx = this.ball.position.x - wallWorldPos.x;
+            const dy = this.ball.position.y - wallWorldPos.y;
+            const dz = this.ball.position.z - wallWorldPos.z;
+            
+            // âœ… Ignorer si pas au mÃªme niveau (avec marge plus large)
+            if (Math.abs(dy) > 3) return;
+            
+            const w = wall.geometry.parameters.width;
+            const d = wall.geometry.parameters.depth;
+            const h = wall.geometry.parameters.height;
+            
+            const closestX = Math.max(wallWorldPos.x - w/2, Math.min(this.ball.position.x, wallWorldPos.x + w/2));
+            const closestZ = Math.max(wallWorldPos.z - d/2, Math.min(this.ball.position.z, wallWorldPos.z + d/2));
+            
+            const distX = this.ball.position.x - closestX;
+            const distZ = this.ball.position.z - closestZ;
+            const dist = Math.sqrt(distX * distX + distZ * distZ);
+            
+            if (dist < this.ballRadius + 0.1) {
+                // âœ… Collision avec rebond
+                if (Math.abs(dx) / (w/2) > Math.abs(dz) / (d/2)) {
+                    this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.2);
+                    this.ballVelocity.x *= -0.6;
+                    this.ballVelocity.z *= 0.7;
+                } else {
+                    this.ball.position.z = wallWorldPos.z + Math.sign(dz) * (d/2 + this.ballRadius + 0.2);
+                    this.ballVelocity.z *= -0.6;
+                    this.ballVelocity.x *= 0.7;
+                }
             }
-        }
-    });
-}
+        });
+    }
     
-   checkHoleCollisions() {
-    this.holes.forEach((hole, index) => {
-        if (!hole.userData.isFallThrough) return;
-        
-        const holeWorldPos = new THREE.Vector3();
-        hole.getWorldPosition(holeWorldPos);
-        
-        const dist2D = Math.sqrt(
-            Math.pow(this.ball.position.x - holeWorldPos.x, 2) +
-            Math.pow(this.ball.position.z - holeWorldPos.z, 2)
-        );
-        
-        const holeRadius = 2.5; // Rayon de détection réduit pour plus de précision
-        
-        // ✅ Déterminer la plateforme actuelle de la bille
-        let currentPlatform;
-        if (this.ball.position.y > -10) {
-            currentPlatform = 1; // Plateforme haute
-        } else if (this.ball.position.y > -30) {
-            currentPlatform = 2; // Plateforme milieu
-        } else {
-            currentPlatform = 3; // Plateforme finale
-        }
-        
-        // ✅ Déterminer la plateforme du trou
-        let holePlatform;
-        if (holeWorldPos.y > -10) {
-            holePlatform = 1;
-        } else if (holeWorldPos.y > -30) {
-            holePlatform = 2;
-        } else {
-            holePlatform = 3;
-        }
-        
-        // ✅ La bille doit être sur la MÊME plateforme que le trou
-        const isOnSamePlatform = currentPlatform === holePlatform;
-        
-      // 🔍 LOGS détaillés (DÉSACTIVÉS pour éviter le spam - réactiver si besoin de debug)
-        // if (dist2D < 5) {
-        //     console.log(`🔍 Trou #${index}:`, {
-        //         'Plateforme trou': holePlatform,
-        //         'Plateforme bille': currentPlatform,
-        //         'Même plateforme?': isOnSamePlatform,
-        //         'Distance XZ': dist2D.toFixed(2),
-        //     });
-        // }
-        
-        // 🔍 LOG si proche du trou (pour debug)
-        if (dist2D < 5 && isOnSamePlatform) {
-            console.log(`🔍 Proche trou #${index} - Dist: ${dist2D.toFixed(2)}, Rayon: ${holeRadius}, isFalling: ${this.isFalling}`);
-        }
-        
-        // ✅ Condition de chute : même plateforme + dans le rayon + pas déjà en train de tomber
-        if (dist2D < holeRadius && isOnSamePlatform && !this.isFalling) {
-            console.log(`🔥 ACTIVATION CHUTE - Distance: ${dist2D.toFixed(2)}, Plateforme: ${holePlatform}`);
-            this.isFalling = true;
+    checkHoleCollisions() {
+        this.holes.forEach((hole, index) => {
+            if (!hole.userData.isFallThrough) return;
             
-            // Attraction FORTE vers le centre du trou
-            const pullStrength = 0.15;
-            this.ballVelocity.x += (holeWorldPos.x - this.ball.position.x) * pullStrength;
-            this.ballVelocity.z += (holeWorldPos.z - this.ball.position.z) * pullStrength;
-            this.ballVelocity.y = -0.5; // Force la chute
+            const holeWorldPos = new THREE.Vector3();
+            hole.getWorldPosition(holeWorldPos);
             
-            return; // 🆕 SORTIR immédiatement pour éviter plusieurs détections
-        }
-    });
-}
+            const dist2D = Math.sqrt(
+                Math.pow(this.ball.position.x - holeWorldPos.x, 2) +
+                Math.pow(this.ball.position.z - holeWorldPos.z, 2)
+            );
+            
+            const holeRadius = 2.5; // Rayon de dÃ©tection rÃ©duit pour plus de prÃ©cision
+            
+            // âœ… DÃ©terminer la plateforme actuelle de la bille
+            let currentPlatform;
+            if (this.ball.position.y > -10) {
+                currentPlatform = 1; // Plateforme haute
+            } else {
+                currentPlatform = 2; // Plateforme finale
+            }
+            
+            // âœ… DÃ©terminer la plateforme du trou
+            let holePlatform;
+            if (holeWorldPos.y > -10) {
+                holePlatform = 1;
+            } else {
+                holePlatform = 2;
+            }
+            
+            // âœ… La bille doit Ãªtre sur la MÃŠME plateforme que le trou
+            const isOnSamePlatform = currentPlatform === holePlatform;
+            
+            // ðŸ” LOG si proche du trou (pour debug)
+            if (dist2D < 5 && isOnSamePlatform) {
+                console.log(`ðŸ” Proche trou #${index} - Dist: ${dist2D.toFixed(2)}, Rayon: ${holeRadius}, isFalling: ${this.isFalling}`);
+            }
+            
+            // âœ… Condition de chute : mÃªme plateforme + dans le rayon + pas dÃ©jÃ  en train de tomber
+            if (dist2D < holeRadius && isOnSamePlatform && !this.isFalling) {
+                console.log(`ðŸ”¥ ACTIVATION CHUTE - Distance: ${dist2D.toFixed(2)}, Plateforme: ${holePlatform}`);
+                this.isFalling = true;
+                
+                // Attraction FORTE vers le centre du trou
+                const pullStrength = 0.15;
+                this.ballVelocity.x += (holeWorldPos.x - this.ball.position.x) * pullStrength;
+                this.ballVelocity.z += (holeWorldPos.z - this.ball.position.z) * pullStrength;
+                this.ballVelocity.y = -0.5; // Force la chute
+                
+                return; // ðŸ†• SORTIR immÃ©diatement pour Ã©viter plusieurs dÃ©tections
+            }
+        });
+    }
     
     checkEnemyCollisions() {
         this.enemies.forEach(enemy => {
@@ -278,7 +247,7 @@ if (this.isFalling) {
             
             // Collision avec l'ennemi (0.4 = rayon ennemi)
             if (dist < this.ballRadius + 0.4) {
-                console.log("💥 Collision avec ennemi - RESPAWN !");
+                console.log("ðŸ’¥ Collision avec ennemi - RESPAWN !");
                 this.resetBall();
                 if (this.onFall) this.onFall();
             }
@@ -287,13 +256,13 @@ if (this.isFalling) {
     
     checkCrystalCollisions() {
         this.crystals.forEach(crystal => {
-            // Ne pas vérifier si déjà collecté ou invisible
+            // Ne pas vÃ©rifier si dÃ©jÃ  collectÃ© ou invisible
             if (crystal.userData.collected || !crystal.visible) return;
             
             const dist = this.ball.position.distanceTo(crystal.position);
             
             if (dist < this.ballRadius + 0.7) {
-                console.log("💎 Cristal collecté !");
+                console.log("ðŸ’Ž Cristal collectÃ© !");
                 crystal.userData.collected = true;
                 
                 // Animation de disparition
@@ -325,8 +294,8 @@ if (this.isFalling) {
         const exitWorldPos = new THREE.Vector3();
         this.exit.getWorldPosition(exitWorldPos);
         
-       // ✔️ VICTOIRE SEULEMENT si bille est sur la DERNIÈRE plateforme
-        const isOnFinalPlatform = this.ball.position.y < -38 && this.ball.position.y > -42;
+        // âœ”ï¸ VICTOIRE SEULEMENT si bille est sur la DERNIÃˆRE plateforme
+        const isOnFinalPlatform = this.ball.position.y < -18 && this.ball.position.y > -22;
         
         if (!isOnFinalPlatform) return; // Pas encore sur la bonne plateforme
         
@@ -335,8 +304,8 @@ if (this.isFalling) {
             Math.pow(this.ball.position.z - exitWorldPos.z, 2)
         );
         
-        if (dist < 2.5) {
-            console.log("🏆 NIVEAU TERMINÉ - Tu es sur la plateforme finale !");
+        if (dist < 3.5) { // Zone de sortie plus grande pour plateforme doublÃ©e
+            console.log("ðŸ† NIVEAU TERMINÃ‰ - Tu es sur la plateforme finale !");
             if (this.onLevelComplete) this.onLevelComplete();
         }
     }
@@ -354,8 +323,8 @@ if (this.isFalling) {
             enemy.position.x += enemy.userData.velocity.x;
             enemy.position.z += enemy.userData.velocity.z;
             
-            // Limites
-            const limit = 8;
+            // Limites Ã©largies pour les ennemis
+            const limit = 17;
             if (Math.abs(enemy.position.x) > limit) {
                 enemy.position.x = Math.sign(enemy.position.x) * limit;
                 enemy.userData.velocity.x *= -1;
@@ -395,9 +364,9 @@ if (this.isFalling) {
         });
     }
     
-    // POUR COMPATIBILITÉ (non utilisé dans cette version)
+    // POUR COMPATIBILITÃ‰ (non utilisÃ© dans cette version)
     updateSolidObjects() {
-        console.log("✔️ Objets initialisés");
+        console.log("âœ”ï¸ Objets initialisÃ©s");
     }
 }
 
