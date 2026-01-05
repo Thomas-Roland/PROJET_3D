@@ -200,36 +200,35 @@ class PlatformManager {
             this.addWallToGroup(platformGroup, 12, 1, 12, 8, 2, 1, mat);
         }
 
-        // ðŸ”µ PLATEFORME FINALE - Labyrinthe guidant vers le centre vert
-        if (type === "middle") {
-            // Couloir extÃ©rieur - forme un cadre
-            this.addWallToGroup(platformGroup, -12, 1, 0, 1, 2, 16, mat);
-            this.addWallToGroup(platformGroup, 12, 1, 0, 1, 2, 16, mat);
-            this.addWallToGroup(platformGroup, 0, 1, -12, 16, 2, 1, mat);
-            this.addWallToGroup(platformGroup, 0, 1, 12, 16, 2, 1, mat);
-            
-            // Obstacles pour crÃ©er des passages
-            this.addWallToGroup(platformGroup, -8, 1, -8, 1, 2, 8, mat);
-            this.addWallToGroup(platformGroup, -8, 1, 8, 8, 2, 1, mat);
-            
-            this.addWallToGroup(platformGroup, 8, 1, -8, 8, 2, 1, mat);
-            this.addWallToGroup(platformGroup, 8, 1, 4, 1, 2, 8, mat);
-            
-            // Murs intermÃ©diaires pour crÃ©er le labyrinthe
-            this.addWallToGroup(platformGroup, -4, 1, -4, 1, 2, 8, mat);
-            this.addWallToGroup(platformGroup, -4, 1, 8, 8, 2, 1, mat);
-            
-            this.addWallToGroup(platformGroup, 4, 1, -8, 8, 2, 1, mat);
-            this.addWallToGroup(platformGroup, 4, 1, 0, 1, 2, 8, mat);
-            
-            // DerniÃ¨re barriÃ¨re avant le centre (laisse passage vers zone verte)
-            this.addWallToGroup(platformGroup, 0, 1, -4, 8, 2, 1, mat);
-            this.addWallToGroup(platformGroup, 0, 1, 4, 6, 2, 1, mat);
-            
-            // Murs qui guident vers le centre vert
-            this.addWallToGroup(platformGroup, -2, 1, 0, 1, 2, 4, mat);
-            this.addWallToGroup(platformGroup, 2, 1, 0, 1, 2, 4, mat);
-        }
+ // 🏵 PLATEFORME FINALE - Labyrinthe avec accès libre au centre vert
+if (type === "middle") {
+
+    
+    // === OBSTACLES PÉRIPHÉRIQUES (loin du centre) ===
+    // Zone supérieure
+    this.addWallToGroup(platformGroup, -8, 1, -10, 8, 2, 1, mat);
+    this.addWallToGroup(platformGroup, 8, 1, -10, 8, 2, 1, mat);
+    
+    // Zone gauche
+    this.addWallToGroup(platformGroup, -10, 1, -5, 1, 2, 8, mat);
+    this.addWallToGroup(platformGroup, -10, 1, 5, 1, 2, 8, mat);
+    
+    // Zone droite
+    this.addWallToGroup(platformGroup, 10, 1, -5, 1, 2, 8, mat);
+    this.addWallToGroup(platformGroup, 10, 1, 5, 1, 2, 8, mat);
+    
+    // Zone inférieure
+    this.addWallToGroup(platformGroup, -8, 1, 10, 8, 2, 1, mat);
+    this.addWallToGroup(platformGroup, 8, 1, 10, 8, 2, 1, mat);
+    
+    // === OBSTACLES INTERMÉDIAIRES (créent difficulté sans bloquer centre) ===
+    this.addWallToGroup(platformGroup, -6, 1, -6, 1, 2, 6, mat);
+    this.addWallToGroup(platformGroup, 6, 1, -6, 1, 2, 6, mat);
+    this.addWallToGroup(platformGroup, -6, 1, 6, 6, 2, 1, mat);
+    this.addWallToGroup(platformGroup, 6, 1, 6, 6, 2, 1, mat);
+    
+    // ⚠️ ZONE CENTRALE (rayon ~4 unités) = 100% LIBRE pour la zone verte
+}
     }
 
     // ===== WALL HELPER =====

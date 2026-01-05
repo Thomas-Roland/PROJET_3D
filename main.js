@@ -38,14 +38,14 @@ class PointsManager {
         this.collectedCrystals++;
         this.score += points;
         this.updateUI();
-        this.showFeedback('ðŸ’Ž +10 pts', 'crystal');
+        this.showFeedback('💎 +10 pts', 'crystal');
     }
     
     addFall(penalty = 20) {
         this.falls++;
         this.score = Math.max(0, this.score - penalty);
         this.updateUI();
-        this.showFeedback('ðŸ’¥ -20 pts', 'damage');
+        this.showFeedback('💥 -20 pts', 'damage');
     }
     
     addLevelBonus(levelBonus, crystalBonus, timeBonus) {
@@ -265,7 +265,7 @@ function levelComplete() {
     
     document.getElementById('gameUI').style.display = 'none';
     document.getElementById('victory').style.display = 'flex';
-    document.getElementById('victoryMessage').textContent = `Niveau ${level} terminÃ© !`;
+    document.getElementById('victoryMessage').textContent = `Niveau ${level} terminé !`;
     document.getElementById('crystalBonus').textContent = `+${crystalBonus} pts`;
     document.getElementById('timeBonus').textContent = `+${timeBonus} pts`;
     document.getElementById('totalScore').textContent = pointsManager.score;
@@ -356,10 +356,18 @@ function animate() {
             ballLight.position.copy(ball.position);
         }
         
-        // ðŸ“¹ CAMÃ‰RA SUIT AUTOMATIQUEMENT LA BILLE
-        if (ball) {
-            // ðŸ†• CamÃ©ra TRÃˆS haute pour voir TOUTE la plateforme
-            const targetCameraY = ball.position.y + 40;
+        // 📹 CAMÉRA SUIT AUTOMATIQUEMENT LA BILLE
+if (ball) {
+    // 🔧 Caméra adaptée selon la plateforme
+    let cameraOffset;
+    if (ball.position.y < -10) {
+        // Plateforme finale : caméra plus basse
+        cameraOffset = 25;
+    } else {
+        // Plateforme haute : caméra haute
+        cameraOffset = 40;
+    }
+    const targetCameraY = ball.position.y + cameraOffset;
             const diffY = targetCameraY - camera.position.y;
             if (Math.abs(diffY) > 0.5) {
                 camera.position.y += diffY * 0.12;

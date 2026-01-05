@@ -69,11 +69,11 @@ class PhysicsEngine {
         this.ballVelocity.y -= 0.015;
         
         const gravity = 0.12;
-this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
-this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
+    this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
+    this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
 
-this.mazeGroup.rotation.x = -this.tilt.x;
-this.mazeGroup.rotation.z = this.tilt.z;
+    this.mazeGroup.rotation.x = -this.tilt.x;
+    this.mazeGroup.rotation.z = this.tilt.z;
         
         const maxSpeed = 0.20;
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
@@ -245,12 +245,18 @@ this.mazeGroup.rotation.z = this.tilt.z;
             
             const dist = this.ball.position.distanceTo(enemyWorldPos);
             
-            // Collision avec l'ennemi (0.4 = rayon ennemi)
-            if (dist < this.ballRadius + 0.4) {
-                console.log("ðŸ’¥ Collision avec ennemi - RESPAWN !");
-                this.resetBall();
-                if (this.onFall) this.onFall();
-            }
+  // Collision avec l'ennemi (0.4 = rayon ennemi)
+if (dist < this.ballRadius + 0.4) {
+    console.log("💥 Collision avec ennemi - RESPAWN !");
+    this.resetBall();
+    
+    // Si on était sur la plateforme 2, recréer les ennemis/cristaux de la plateforme 1
+    if (enemyWorldPos.y < -10 && this.onPlatformChange) {
+        this.onPlatformChange(1);
+    }
+    
+    if (this.onFall) this.onFall();
+}
         });
     }
     
@@ -288,27 +294,26 @@ this.mazeGroup.rotation.z = this.tilt.z;
     }
     
     checkExitCollision() {
-        if (!this.exit) return;
-        
-        // Position de la sortie dans le monde
-        const exitWorldPos = new THREE.Vector3();
-        this.exit.getWorldPosition(exitWorldPos);
-        
-        // âœ”ï¸ VICTOIRE SEULEMENT si bille est sur la DERNIÃˆRE plateforme
-        const isOnFinalPlatform = this.ball.position.y < -18 && this.ball.position.y > -22;
-        
-        if (!isOnFinalPlatform) return; // Pas encore sur la bonne plateforme
-        
-        const dist = Math.sqrt(
-            Math.pow(this.ball.position.x - exitWorldPos.x, 2) +
-            Math.pow(this.ball.position.z - exitWorldPos.z, 2)
-        );
-        
-        if (dist < 3.5) { // Zone de sortie plus grande pour plateforme doublÃ©e
-            console.log("ðŸ† NIVEAU TERMINÃ‰ - Tu es sur la plateforme finale !");
-            if (this.onLevelComplete) this.onLevelComplete();
-        }
+    if (!this.exit) return;
+    
+    const exitWorldPos = new THREE.Vector3();
+    this.exit.getWorldPosition(exitWorldPos);
+    
+    // ✅ VICTOIRE SEULEMENT si bille est sur la DERNIÈRE plateforme
+    const isOnFinalPlatform = this.ball.position.y < -18 && this.ball.position.y > -22;
+    
+    if (!isOnFinalPlatform) return;
+    
+    const dist = Math.sqrt(
+        Math.pow(this.ball.position.x - exitWorldPos.x, 2) +
+        Math.pow(this.ball.position.z - exitWorldPos.z, 2)
+    );
+    
+    if (dist < 2.5) { 
+        console.log("🏁 NIVEAU TERMINÉ !");
+        if (this.onLevelComplete) this.onLevelComplete();
     }
+}
     
     updateEnemies() {
         this.enemies.forEach(enemy => {
