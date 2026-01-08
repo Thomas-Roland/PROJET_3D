@@ -1,4 +1,4 @@
-// main.js - Orchestrateur principal SIMPLIFIÃ‰
+// main.js - Orchestrateur principal avec système de niveaux
 
 class TimeManager {
     constructor(updateTimer, gameOver) {
@@ -16,7 +16,7 @@ class TimeManager {
             this.updateTimer(this.timer);
             if (this.timer <= 0) {
                 clearInterval(this.timerInterval);
-                this.gameOver('Temps Ã©coulÃ© !');
+                this.gameOver('Temps écoulé !');
             }
         }, 1000);
     }
@@ -83,10 +83,9 @@ class PointsManager {
 // ========== CONFIGURATION THREE.JS ==========
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a1e);
-// âŒ BROUILLARD DÃ‰SACTIVÃ‰ pour voir toute la plateforme
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-camera.position.set(0, 50, 60); // ðŸ†• CamÃ©ra BEAUCOUP plus haute et plus loin
+camera.position.set(0, 50, 60);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -94,7 +93,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// LumiÃ¨res
+// Lumières
 const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
 scene.add(ambientLight);
 
@@ -105,14 +104,19 @@ scene.add(directionalLight);
 
 // ========== VARIABLES ==========
 let gameState = 'menu';
-let difficulty = 'beginner';
-let level = 1;
+let currentDifficulty = 'beginner';
 
 const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
-const difficultySettings = {
-    beginner: { time: 180, enemyCount: 6, crystalCount: 8, wallComplexity: 'easy' } // ðŸ†• Plus d'ennemis et cristaux
+// 🆕 LEVEL LOADER
+const levelLoader = new LevelLoader();
+
+// 🆕 SYSTÈME DE DÉBLOCAGE
+const unlockedDifficulties = {
+    beginner: true,
+    intermediate: false,
+    expert: false
 };
 
 let timeManager;
@@ -124,7 +128,7 @@ let physicsEngine;
 let ball = null;
 let ballLight = null;
 
-// ========== CONTRÃ”LES ==========
+// ========== CONTRÔLES ==========
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
@@ -166,7 +170,7 @@ function updateTimerUI(timer) {
 }
 
 function updateUI() {
-    document.getElementById('level').textContent = level;
+    document.getElementById('level').textContent = currentDifficulty === 'beginner' ? 'Débutant' : currentDifficulty;
     document.getElementById('score').textContent = pointsManager.score;
     document.getElementById('crystals').textContent = pointsManager.collectedCrystals;
     document.getElementById('falls').textContent = pointsManager.falls;
@@ -186,7 +190,7 @@ function createBall() {
         emissiveIntensity: 0.8
     });
     ball = new THREE.Mesh(ballGeo, ballMat);
-    ball.position.set(-15, 0.5, -15); // ðŸ†• Position ajustÃ©e pour grande plateforme
+    ball.position.set(-15, 0.5, -15);
     ball.castShadow = true;
     mazeGroup.add(ball);
     
@@ -198,21 +202,29 @@ function createBall() {
 }
 
 // ========== GAME LOGIC ==========
-function startGame(diff) {
-    console.log('=== DÃ‰MARRAGE DU JEU ===');
+function startGame(difficulty) {
+    console.log('=== DÉMARRAGE DU JEU ===');
     
-    difficulty = diff;
-    level = 1;
+    currentDifficulty = difficulty;
+    
+    // 🆕 CHARGER LA CONFIGURATION DU NIVEAU
+    const levelConfig = levelLoader.getLevel(difficulty);
+    
+    if (!levelConfig) {
+        console.error('❌ Impossible de charger le niveau !');
+        return;
+    }
     
     pointsManager = new PointsManager(updateUI);
     timeManager = new TimeManager(updateTimerUI, gameOver);
-    platformManager = new PlatformManager(scene, mazeGroup, difficultySettings);
+    platformManager = new PlatformManager(scene, mazeGroup);
     enemyManager = new EnemyManager(scene, mazeGroup);
     crystalManager = new CrystalManager(scene, mazeGroup);
     
-    const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, 1);
-    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, 1);
+    // 🆕 CRÉER LE NIVEAU DEPUIS LA CONFIG
+    const { walls, holes, exit } = platformManager.createPlatform(levelConfig);
+    const enemies = enemyManager.createEnemies(levelConfig.settings.enemyCount, 1);
+    const crystals = crystalManager.createCrystals(levelConfig.settings.crystalCount, 1);
     
     createBall();
     
@@ -220,25 +232,22 @@ function startGame(diff) {
     
     physicsEngine.onFall = () => pointsManager.addFall();
     physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-    physicsEngine.onLevelComplete = () => levelComplete();
+    physicsEngine.onLevelComplete = () => levelComplete(levelConfig);
 
-    // ðŸ†• CALLBACK CHANGEMENT DE PLATEFORME
+    // CALLBACK CHANGEMENT DE PLATEFORME
     physicsEngine.onPlatformChange = (platformLevel) => {
-        console.log(`ðŸŽ¯ Changement vers plateforme ${platformLevel}`);
+        console.log(`🏯 Changement vers plateforme ${platformLevel}`);
         
-        // Supprimer anciens ennemis/cristaux
         enemyManager.clear();
         crystalManager.clear();
         
-        // RecrÃ©er sur la nouvelle plateforme
-        const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
-        const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
+        const newEnemies = enemyManager.createEnemies(levelConfig.settings.enemyCount, platformLevel);
+        const newCrystals = crystalManager.createCrystals(levelConfig.settings.crystalCount, platformLevel);
         
-        // Mettre Ã  jour le moteur physique
         physicsEngine.enemies = newEnemies;
         physicsEngine.crystals = newCrystals;
         
-        console.log(`âœ… ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recrÃ©Ã©s`);
+        console.log(`✔️ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
     };
     
     document.getElementById('startMenu').style.display = 'none';
@@ -246,12 +255,14 @@ function startGame(diff) {
     
     gameState = 'playing';
     updateUI();
-    timeManager.startTimer(difficultySettings[difficulty].time);
     
-    console.log('=== JEU DÃ‰MARRÃ‰ ===');
+    // 🆕 UTILISER LE TEMPS DU NIVEAU
+    timeManager.startTimer(levelConfig.settings.timeLimit);
+    
+    console.log('=== JEU DÉMARRÉ ===');
 }
 
-function levelComplete() {
+function levelComplete(levelConfig) {
     if (gameState !== 'playing') return;
     
     timeManager.stopTimer();
@@ -263,53 +274,51 @@ function levelComplete() {
     
     pointsManager.addLevelBonus(levelBonus, crystalBonus, timeBonus);
     
+    // 🆕 DÉBLOQUER LE NIVEAU SUIVANT
+    unlockNextDifficulty(currentDifficulty);
+    
     document.getElementById('gameUI').style.display = 'none';
     document.getElementById('victory').style.display = 'flex';
-    document.getElementById('victoryMessage').textContent = `Niveau ${level} terminé !`;
+    document.getElementById('victoryMessage').textContent = `${levelConfig.name} terminé !`;
     document.getElementById('crystalBonus').textContent = `+${crystalBonus} pts`;
     document.getElementById('timeBonus').textContent = `+${timeBonus} pts`;
     document.getElementById('totalScore').textContent = pointsManager.score;
+    
+    // 🆕 GÉRER LE BOUTON "NIVEAU SUIVANT"
+    const nextLevelBtn = document.getElementById('nextLevel');
+    const nextDiff = levelLoader.getNextDifficulty(currentDifficulty);
+    
+    if (nextDiff && unlockedDifficulties[nextDiff]) {
+        nextLevelBtn.style.display = 'block';
+        nextLevelBtn.onclick = () => {
+            returnToMenu();
+        };
+    } else {
+        nextLevelBtn.style.display = 'none';
+    }
 }
 
-function nextLevel() {
-    level++;
-    pointsManager.reset();
-    
-    const { walls, holes, exit } = platformManager.createPlatform(difficulty);
-    const enemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, level);
-    const crystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, level);
-    
-    createBall();
-    
-    physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
-    physicsEngine.onFall = () => pointsManager.addFall();
-    physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
-    physicsEngine.onLevelComplete = () => levelComplete();
-
-    // ðŸ†• CALLBACK CHANGEMENT DE PLATEFORME (aussi pour nextLevel)
-    physicsEngine.onPlatformChange = (platformLevel) => {
-        console.log(`ðŸŽ¯ Changement vers plateforme ${platformLevel}`);
-        
-        enemyManager.clear();
-        crystalManager.clear();
-        
-        const newEnemies = enemyManager.createEnemies(difficultySettings[difficulty].enemyCount, platformLevel);
-        const newCrystals = crystalManager.createCrystals(difficultySettings[difficulty].crystalCount, platformLevel);
-        
-        physicsEngine.enemies = newEnemies;
-        physicsEngine.crystals = newCrystals;
-        
-        console.log(`âœ… ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recrÃ©Ã©s`);
-    };
-    
-    camera.position.y = 50; // ðŸ†• Hauteur camÃ©ra ajustÃ©e
-    
-    document.getElementById('victory').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    
-    gameState = 'playing';
-    updateUI();
-    timeManager.startTimer(difficultySettings[difficulty].time);
+// 🆕 FONCTION DE DÉBLOCAGE
+function unlockNextDifficulty(currentDiff) {
+    if (currentDiff === 'beginner') {
+        unlockedDifficulties.intermediate = true;
+        const btnIntermediate = document.getElementById('btn-intermediate');
+        if (btnIntermediate) {
+            btnIntermediate.disabled = false;
+            btnIntermediate.classList.remove('disabled');
+            console.log('🔓 Intermédiaire débloqué !');
+        }
+    } else if (currentDiff === 'intermediate') {
+        unlockedDifficulties.expert = true;
+        const btnExpert = document.getElementById('btn-expert');
+        if (btnExpert) {
+            btnExpert.disabled = false;
+            btnExpert.classList.remove('disabled');
+            console.log('🔓 Expert débloqué !');
+        }
+    } else if (currentDiff === 'expert') {
+        console.log('🏆 Tous les niveaux terminés !');
+    }
 }
 
 function gameOver(message) {
@@ -337,7 +346,7 @@ function returnToMenu() {
         ballLight = null;
     }
     
-    camera.position.y = 50; // ðŸ†• Hauteur camÃ©ra ajustÃ©e
+    camera.position.set(0, 50, 60);
     
     document.getElementById('gameOver').style.display = 'none';
     document.getElementById('victory').style.display = 'none';
@@ -356,27 +365,22 @@ function animate() {
             ballLight.position.copy(ball.position);
         }
         
-        // 📹 CAMÉRA SUIT AUTOMATIQUEMENT LA BILLE
-if (ball) {
-    // 🔧 Caméra adaptée selon la plateforme
-    let cameraOffset;
-    if (ball.position.y < -10) {
-        // Plateforme finale : caméra plus basse
-        cameraOffset = 25;
-    } else {
-        // Plateforme haute : caméra haute
-        cameraOffset = 40;
-    }
-    const targetCameraY = ball.position.y + cameraOffset;
+        // CAMÉRA SUIT LA BILLE
+        if (ball) {
+            let cameraOffset;
+            if (ball.position.y < -10) {
+                cameraOffset = 25;
+            } else {
+                cameraOffset = 40;
+            }
+            const targetCameraY = ball.position.y + cameraOffset;
             const diffY = targetCameraY - camera.position.y;
             if (Math.abs(diffY) > 0.5) {
                 camera.position.y += diffY * 0.12;
             }
             
-            camera.position.x = 0; // CentrÃ©
-            camera.position.z = 50; // ðŸ†• BEAUCOUP plus loin pour voir tout le labyrinthe
-            
-            // ðŸ‘ï¸ CAMÃ‰RA REGARDE LE CENTRE
+            camera.position.x = 0;
+            camera.position.z = 50;
             camera.lookAt(0, camera.position.y - 40, 0);
         }
     }
@@ -384,11 +388,20 @@ if (ball) {
     renderer.render(scene, camera);
 }
 
-// ========== Ã‰VÃ‰NEMENTS ==========
+// ========== ÉVÉNEMENTS ==========
 window.addEventListener('DOMContentLoaded', () => {
+    // 🔧 GESTION DYNAMIQUE DES BOUTONS DE DIFFICULTÉ
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
-        if (btn.dataset.difficulty && !btn.disabled) {
-            btn.addEventListener('click', () => startGame(btn.dataset.difficulty));
+        if (btn.dataset.difficulty) {
+            btn.addEventListener('click', () => {
+                const difficulty = btn.dataset.difficulty;
+                // Vérifier si le niveau est débloqué
+                if (unlockedDifficulties[difficulty]) {
+                    startGame(difficulty);
+                } else {
+                    console.log(`🔒 ${difficulty} est verrouillé`);
+                }
+            });
         }
     });
 
@@ -397,7 +410,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const returnMenuVictoryBtn = document.getElementById('returnMenuVictory');
     const quitGameBtn = document.getElementById('quitGame');
     
-    if (nextLevelBtn) nextLevelBtn.addEventListener('click', nextLevel);
+    if (nextLevelBtn) nextLevelBtn.addEventListener('click', () => {
+        const nextDiff = levelLoader.getNextDifficulty(currentDifficulty);
+        if (nextDiff) {
+            returnToMenu();
+        }
+    });
     if (returnMenuBtn) returnMenuBtn.addEventListener('click', returnToMenu);
     if (returnMenuVictoryBtn) returnMenuVictoryBtn.addEventListener('click', returnToMenu);
     if (quitGameBtn) quitGameBtn.addEventListener('click', returnToMenu);

@@ -33,7 +33,7 @@
         <div id="stats">
             <div class="stat-item">
                 <span class="stat-label">Niveau</span>
-                <span class="stat-value" id="level">1</span>
+                <span class="stat-value" id="level">Débutant</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Score</span>
@@ -83,7 +83,7 @@
                     <span class="score-value" id="totalScore">0</span>
                 </div>
             </div>
-            <button id="nextLevel" class="difficulty-btn">Niveau suivant</button>
+            <button id="nextLevel" class="difficulty-btn" style="display: none;">Niveau suivant</button>
             <button id="returnMenuVictory" class="difficulty-btn btn-secondary">Menu principal</button>
         </div>
     </div>
@@ -104,16 +104,25 @@
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- IMPORTANT: Charger les scripts dans cet ordre exact -->
-    <!-- 1. Moteur physique (dépendances: Three.js) -->
+    <!-- 🆕 ORDRE DE CHARGEMENT MODIFIÉ -->
+    
+    <!-- 1. Configuration des niveaux -->
+    <script src="levels/beginner.js"></script>
+    <script src="levels/intermediate.js"></script>
+    <!-- <script src="levels/expert.js"></script> -->
+    
+    <!-- 2. Gestionnaire de niveaux -->
+    <script src="levelLoader.js"></script>
+    
+    <!-- 3. Moteur physique -->
     <script src="physics.js"></script>
     
-    <!-- 2. Gestionnaires (dépendances: Three.js) -->
+    <!-- 4. Gestionnaires d'entités -->
     <script src="platforms.js"></script>
     <script src="enemies.js"></script>
     <script src="crystals.js"></script>
     
-    <!-- 3. Orchestrateur principal (dépendances: tous les autres) -->
+    <!-- 5. Orchestrateur principal -->
     <script src="main.js"></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+project/
+├── index.html
+├── main.js orchestrateur principal
+├── physics.js moteur physique
+├── enemies.js gestionnaire d'ennemis
+├── crystals.js gestionnaire de cristaux
+├── platforms.js classe de base PlatformManager
+│
+└── levels/
+    ├── beginner.js configuration niveau débutant
+    ├── intermediate.js configuration niveau intermédiaire
+    └── expert.js configuration niveau expert
