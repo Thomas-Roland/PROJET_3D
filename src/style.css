@@ -7,9 +7,10 @@
 body {
     font-family: Arial, sans-serif;
     overflow: hidden;
-    background: #000000; /* Noir profond comme le ciel étoilé */
+    background-color: rgba(0, 0, 0, 0.5); /* noir à 50% */
     color: white;
 }
+
 
 canvas {
     display: block;
@@ -319,4 +320,93 @@ canvas {
         opacity: 0;
         transform: translate(-50%, -50%) scale(1);
     }
+}
+
+#siteHeader {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    background: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.site-logo {
+    height: 200px;
+    max-width: 90%;
+}
+
+/* ========================================
+   🎬 VIDÉO DE FOND POUR LE MENU - CORRIGÉ
+   ======================================== */
+
+/* Conteneur de la vidéo de fond */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1; /* AU-DESSUS du canvas mais EN-DESSOUS du menu */
+}
+
+/* Vidéo plein écran avec transparence */
+.video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    opacity: 0.5; /* Augmenté pour mieux voir */
+}
+
+/* Overlay gradient sur la vidéo */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(10, 10, 30, 0.6), rgba(26, 26, 62, 0.6));
+    pointer-events: none;
+}
+
+/* ========================================
+   CORRECTIONS BODY ET BACKGROUND
+   ======================================== */
+
+/* Modifier le body pour enlever le fond noir opaque */
+body {
+    background-color: #0a0a1e; /* Couleur mais pas d'overlay */
+}
+
+/* S'assurer que le menu est au-dessus */
+.menu-overlay {
+    z-index: 100; /* Déjà présent normalement */
+    background: rgba(0, 0, 0, 0.3); /* Réduire l'opacité pour voir la vidéo */
+}
+
+/* Améliorer le menu-box pour qu'il soit bien visible */
+.menu-box {
+    background: rgba(26, 26, 62, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Effet lumineux sur le titre */
+.menu-box h1 {
+    text-shadow: 0 0 20px rgba(68, 255, 255, 0.5);
+}
+
+/* Amélioration des boutons au hover */
+.difficulty-btn:hover:not(:disabled) {
+    box-shadow: 0 5px 15px rgba(68, 255, 255, 0.3);
 }

@@ -3,27 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Labyrinthe 3D - Bille Lumineuse</title>
+    <title>SpeedLabyrinthe 3D</title>
+    <link rel="icon" type="image/x-icon" href="src/favicon.ico">
     <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
+    <!-- 🎬 VIDÉO DE FOND (visible uniquement dans le menu) -->
+<div id="videoBackground" class="video-background">
+    <video id="bgVideo" autoplay loop playsinline>
+        <source src="src/back.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    
+    <!-- Bouton de contrôle du son -->
+    <button id="soundToggle" class="sound-toggle" title="Activer le son">
+        <span class="sound-icon">🔇</span>
+    </button>
+</div>
+
     <!-- Menu de démarrage -->
     <div id="startMenu" class="menu-overlay">
         <div class="menu-box">
-            <h1>Labyrinthe 3D</h1>
+             <img src="src/logo.png" alt="Logo SpeedLabyrinthe 3D" class="site-logo">
+            <h1>SpeedLabyrinthe 3D</h1>
             <h2>Bille Lumineuse</h2>
             <p>Inclinez le labyrinthe pour guider la bille vers la sortie</p>
             <button class="difficulty-btn" data-difficulty="beginner">
                 <span class="btn-title">Débutant</span>
-                <span class="btn-desc">3 minutes</span>
+                <span class="btn-desc">1 minute</span>
             </button>
             <button class="difficulty-btn" data-difficulty="intermediate" disabled id="btn-intermediate">
                 <span class="btn-title">Intermédiaire</span>
-                <span class="btn-desc">2 minutes</span>
+                <span class="btn-desc">45 secondes</span>
             </button>
             <button class="difficulty-btn" data-difficulty="expert" disabled id="btn-expert">
                 <span class="btn-title">Expert</span>
-                <span class="btn-desc">1 minute 30</span>
+                <span class="btn-desc">30 secondes</span>
             </button>
         </div>
     </div>
@@ -104,25 +119,63 @@
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- 🆕 ORDRE DE CHARGEMENT MODIFIÉ -->
-    
-    <!-- 1. Configuration des niveaux -->
+    <!-- Configuration des niveaux -->
     <script src="levels/beginner.js"></script>
     <script src="levels/intermediate.js"></script>
-    <!-- <script src="levels/expert.js"></script> -->
     
-    <!-- 2. Gestionnaire de niveaux -->
+    <!-- Gestionnaire de niveaux -->
     <script src="levelLoader.js"></script>
     
-    <!-- 3. Moteur physique -->
+    <!-- Moteur physique -->
     <script src="physics.js"></script>
     
-    <!-- 4. Gestionnaires d'entités -->
+    <!-- Gestionnaires d'entités -->
     <script src="platforms.js"></script>
     <script src="enemies.js"></script>
     <script src="crystals.js"></script>
     
-    <!-- 5. Orchestrateur principal -->
+    <!-- 🎬 GESTION DE LA VIDÉO -->
+    <script>
+        const videoBackground = document.getElementById('videoBackground');
+        const startMenu = document.getElementById('startMenu');
+        
+        // Cacher la vidéo quand le jeu commence
+        function hideVideoBackground() {
+            if (videoBackground) {
+                videoBackground.style.display = 'none';
+            }
+        }
+        
+        // Afficher la vidéo quand on revient au menu
+        function showVideoBackground() {
+            if (videoBackground) {
+                videoBackground.style.display = 'block';
+                const video = videoBackground.querySelector('video');
+                if (video) video.play().catch(e => console.log('Autoplay bloqué'));
+            }
+        }
+        
+        // Observer les changements d'affichage du menu
+        const menuObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'style') {
+                    const isMenuVisible = startMenu.style.display !== 'none';
+                    if (isMenuVisible) {
+                        showVideoBackground();
+                    } else {
+                        hideVideoBackground();
+                    }
+                }
+            });
+        });
+        
+        menuObserver.observe(startMenu, { attributes: true });
+        
+        // S'assurer que la vidéo est visible au chargement
+        showVideoBackground();
+    </script>
+    
+    <!-- Orchestrateur principal -->
     <script src="main.js"></script>
 </body>
 </html>

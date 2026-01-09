@@ -4,110 +4,109 @@ const IntermediateLevel = {
     name: "Intermédiaire",
     difficulty: "intermediate",
     
-    // Configuration du labyrinthe plateforme HAUTE (LABYRINTHE OPTIMAL - dans les limites)
+    // Configuration du labyrinthe plateforme HAUTE - Labyrinthe navigable sur toute la surface
     wallsTop: [
-        // ===== COLONNES VERTICALES =====
-        { x: -12, y: 1, z: -10, w: 1, h: 2, d: 12 },
-        { x: -12, y: 1, z: 6, w: 1, h: 2, d: 10 },
+        // Bordures extérieures
+        { x: 0, y: 1, z: -16, w: 32, h: 2, d: 1 },  // Haut
+        { x: 0, y: 1, z: 16, w: 32, h: 2, d: 1 },   // Bas
+        { x: -16, y: 1, z: 0, w: 1, h: 2, d: 32 },  // Gauche
+        { x: 16, y: 1, z: 0, w: 1, h: 2, d: 32 },   // Droite
         
-        { x: -8, y: 1, z: -12, w: 1, h: 2, d: 10 },
-        { x: -8, y: 1, z: 2, w: 1, h: 2, d: 12 },
-        
-        { x: -4, y: 1, z: -8, w: 1, h: 2, d: 12 },
-        { x: -4, y: 1, z: 8, w: 1, h: 2, d: 10 },
-        
-        { x: 0, y: 1, z: -12, w: 1, h: 2, d: 10 },
-        { x: 0, y: 1, z: 2, w: 1, h: 2, d: 12 },
-        
-        { x: 4, y: 1, z: -10, w: 1, h: 2, d: 14 },
-        { x: 4, y: 1, z: 8, w: 1, h: 2, d: 10 },
-        
-        { x: 8, y: 1, z: -12, w: 1, h: 2, d: 12 },
-        { x: 8, y: 1, z: 4, w: 1, h: 2, d: 12 },
-        
-        { x: 12, y: 1, z: -8, w: 1, h: 2, d: 12 },
-        { x: 12, y: 1, z: 8, w: 1, h: 2, d: 10 },
-        
-        // ===== LIGNES HORIZONTALES =====
-        { x: -10, y: 1, z: -12, w: 10, h: 2, d: 1 },
-        { x: 4, y: 1, z: -12, w: 10, h: 2, d: 1 },
+        // Murs horizontaux créant les couloirs
+        { x: -8, y: 1, z: -12, w: 12, h: 2, d: 1 },
+        { x: 6, y: 1, z: -12, w: 12, h: 2, d: 1 },
         
         { x: -12, y: 1, z: -8, w: 10, h: 2, d: 1 },
-        { x: 2, y: 1, z: -8, w: 12, h: 2, d: 1 },
+        { x: 4, y: 1, z: -8, w: 16, h: 2, d: 1 },
         
-        { x: -10, y: 1, z: -4, w: 12, h: 2, d: 1 },
-        { x: 6, y: 1, z: -4, w: 10, h: 2, d: 1 },
+        { x: -8, y: 1, z: -4, w: 12, h: 2, d: 1 },
+        { x: 8, y: 1, z: -4, w: 10, h: 2, d: 1 },
         
-        { x: -12, y: 1, z: 0, w: 10, h: 2, d: 1 },
-        { x: 2, y: 1, z: 0, w: 12, h: 2, d: 1 },
+        { x: 4, y: 1, z: 0, w: 14, h: 2, d: 1 },
         
-        { x: -10, y: 1, z: 4, w: 12, h: 2, d: 1 },
-        { x: 6, y: 1, z: 4, w: 10, h: 2, d: 1 },
+        { x: -10, y: 1, z: 4, w: 14, h: 2, d: 1 },
+        { x: 8, y: 1, z: 4, w: 12, h: 2, d: 1 },
         
-        { x: -12, y: 1, z: 8, w: 10, h: 2, d: 1 },
-        { x: 2, y: 1, z: 8, w: 12, h: 2, d: 1 },
+        { x: 6, y: 1, z: 8, w: 14, h: 2, d: 1 },
         
-        { x: -10, y: 1, z: 12, w: 12, h: 2, d: 1 },
-        { x: 6, y: 1, z: 12, w: 10, h: 2, d: 1 }
+        { x: -10, y: 1, z: 12, w: 14, h: 2, d: 1 },        
+        { x: -8, y: 1, z: 12, w: 14, h: 2, d: 1 },
+
+        // Murs verticaux créant les passages
+
+        { x: -8, y: 1, z: -10, w: 1, h: 2, d: 8 },
+        { x: -8, y: 1, z: 4, w: 1, h: 2, d: 6 },
+        
+        { x: -4, y: 1, z: 6, w: 1, h: 2, d: 8 },
+        
+        { x: 0, y: 1, z: 2, w: 1, h: 2, d: 8 },
+        
+        { x: 4, y: 1, z: -14, w: 1, h: 2, d: 6 },
+        
+        { x: 8, y: 1, z: 4, w: 1, h: 2, d: 6 },
+        
+        { x: 12, y: 1, z: -14, w: 1, h: 2, d: 8 },
     ],
     
-    // Position du trou (accessible via le labyrinthe)
-    holeTop: { x: -8, y: 0.51, z: 12, radius: 1.5 },
+    // Position du trou (sud-est)
+    holeTop: { x: 11, y: 0.51, z: 12, radius: 1.5 },
     
-    // Configuration du labyrinthe plateforme FINALE (OPTIMAL - dans les limites)
+    // Configuration du labyrinthe plateforme FINALE - Labyrinthe navigable sur toute la surface
     wallsFinal: [
-        // ===== COLONNES VERTICALES =====
-        { x: -11, y: 1, z: -10, w: 1, h: 2, d: 12 },
-        { x: -11, y: 1, z: 6, w: 1, h: 2, d: 10 },
+        // Bordures extérieures
+        { x: 0, y: 1, z: -16, w: 32, h: 2, d: 1 },  // Haut
+        { x: 0, y: 1, z: 16, w: 32, h: 2, d: 1 },   // Bas
+        { x: -16, y: 1, z: 0, w: 1, h: 2, d: 32 },  // Gauche
+        { x: 16, y: 1, z: 0, w: 1, h: 2, d: 32 },   // Droite
         
-        { x: -7, y: 1, z: -12, w: 1, h: 2, d: 10 },
-        { x: -7, y: 1, z: 2, w: 1, h: 2, d: 12 },
+        // Murs intérieurs - disposition en spirale
+        { x: -10, y: 1, z: -12, w: 14, h: 2, d: 1 },
+        { x: 8, y: 1, z: -12, w: 10, h: 2, d: 1 },
         
-        { x: -3, y: 1, z: -8, w: 1, h: 2, d: 12 },
-        { x: -3, y: 1, z: 8, w: 1, h: 2, d: 10 },
+        { x: -12, y: 1, z: -8, w: 8, h: 2, d: 1 },
+        { x: 2, y: 1, z: -8, w: 18, h: 2, d: 1 },
         
-        { x: 1, y: 1, z: -12, w: 1, h: 2, d: 10 },
-        { x: 1, y: 1, z: 2, w: 1, h: 2, d: 12 },
+        { x: -8, y: 1, z: -4, w: 10, h: 2, d: 1 },
+        { x: 6, y: 1, z: -4, w: 14, h: 2, d: 1 },
         
-        { x: 5, y: 1, z: -10, w: 1, h: 2, d: 14 },
-        { x: 5, y: 1, z: 8, w: 1, h: 2, d: 10 },
         
-        { x: 9, y: 1, z: -12, w: 1, h: 2, d: 12 },
-        { x: 9, y: 1, z: 4, w: 1, h: 2, d: 12 },
+        { x: -10, y: 1, z: 4, w: 12, h: 2, d: 1 },
+        { x: 6, y: 1, z: 4, w: 14, h: 2, d: 1 },
         
-        { x: 13, y: 1, z: -8, w: 1, h: 2, d: 12 },
-        { x: 13, y: 1, z: 8, w: 1, h: 2, d: 10 },
+        { x: 2, y: 1, z: 8, w: 18, h: 2, d: 1 },
         
-        // ===== LIGNES HORIZONTALES =====
-        { x: -9, y: 1, z: -12, w: 10, h: 2, d: 1 },
-        { x: 5, y: 1, z: -12, w: 10, h: 2, d: 1 },
+        { x: -8, y: 1, z: 12, w: 12, h: 2, d: 1 },
+        { x: 8, y: 1, z: 12, w: 12, h: 2, d: 1 },
         
-        { x: -11, y: 1, z: -8, w: 10, h: 2, d: 1 },
-        { x: 3, y: 1, z: -8, w: 12, h: 2, d: 1 },
+        // Murs verticaux
+        { x: -12, y: 1, z: -14, w: 1, h: 2, d: 8 },
+        { x: -12, y: 1, z: 0, w: 1, h: 2, d: 10 },
         
-        { x: -9, y: 1, z: -4, w: 12, h: 2, d: 1 },
-        { x: 7, y: 1, z: -4, w: 10, h: 2, d: 1 },
+        { x: -8, y: 1, z: -10, w: 1, h: 2, d: 8 },
+        { x: -8, y: 1, z: 4, w: 1, h: 2, d: 6 },
         
-        { x: -11, y: 1, z: 0, w: 10, h: 2, d: 1 },
-        { x: 3, y: 1, z: 0, w: 12, h: 2, d: 1 },
+        { x: -4, y: 1, z: 2, w: 1, h: 2, d: 8 },
         
-        { x: -9, y: 1, z: 4, w: 12, h: 2, d: 1 },
-        { x: 7, y: 1, z: 4, w: 10, h: 2, d: 1 },
+        { x: 0, y: 1, z: -6, w: 1, h: 2, d: 8 },
+        { x: 0, y: 1, z: 6, w: 1, h: 2, d: 8 },
         
-        { x: -11, y: 1, z: 8, w: 10, h: 2, d: 1 },
-        { x: 3, y: 1, z: 8, w: 12, h: 2, d: 1 },
+        { x: 4, y: 1, z: -10, w: 1, h: 2, d: 8 },
+        { x: 4, y: 1, z: 4, w: 1, h: 2, d: 10 },
         
-        { x: -9, y: 1, z: 12, w: 12, h: 2, d: 1 },
-        { x: 7, y: 1, z: 12, w: 10, h: 2, d: 1 }
+        { x: 8, y: 1, z: -14, w: 1, h: 2, d: 6 },
+        { x: 8, y: 1, z: 6, w: 1, h: 2, d: 8 },
+        
+        { x: 12, y: 1, z: -10, w: 1, h: 2, d: 8 },
+        { x: 12, y: 1, z: 4, w: 1, h: 2, d: 10 }
     ],
     
     // Paramètres de gameplay (PLUS DIFFICILE que débutant)
     settings: {
-        timeLimit: 120,        // 2 minutes (vs 3 pour débutant)
-        enemyCount: 10,        // 10 ennemis (vs 6)
-        crystalCount: 12,      // 12 cristaux (vs 8)
-        enemySpeed: 0.10,      // Ennemis plus rapides
-        ballMaxSpeed: 0.22     // Bille légèrement plus rapide
+        timeLimit: 45,        
+        enemyCount: 0,        
+        crystalCount: 12,      
+        enemySpeed: 0.10,      
+        ballMaxSpeed: 0.22     
     }
 };
 
