@@ -10,7 +10,7 @@
 <body>
     <!-- 🎬 VIDÉO DE FOND (visible uniquement dans le menu) -->
 <div id="videoBackground" class="video-background">
-    <video id="bgVideo" autoplay loop playsinline>
+    <video id="bgVideo" autoplay loop muted playsinline>
         <source src="src/back.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
@@ -122,6 +122,7 @@
     <!-- Configuration des niveaux -->
     <script src="levels/beginner.js"></script>
     <script src="levels/intermediate.js"></script>
+    <script src="levels/expert.js"></script> 
     
     <!-- Gestionnaire de niveaux -->
     <script src="levelLoader.js"></script>
