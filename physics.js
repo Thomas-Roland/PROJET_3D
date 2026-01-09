@@ -68,14 +68,14 @@ class PhysicsEngine {
         // GRAVITÃ‰ VERTICALE (rÃ©duite pour Ã©viter chute spontanÃ©e)
         this.ballVelocity.y -= 0.015;
         
-        const gravity = 0.12;
+        const gravity = 0.08;
     this.ballVelocity.x += Math.sin(-this.tilt.z) * gravity;
     this.ballVelocity.z += Math.sin(-this.tilt.x) * gravity;
 
     this.mazeGroup.rotation.x = -this.tilt.x;
     this.mazeGroup.rotation.z = this.tilt.z;
         
-        const maxSpeed = 0.20;
+        const maxSpeed = 0.15;
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
         if (speed > maxSpeed) {
             this.ballVelocity.x = (this.ballVelocity.x / speed) * maxSpeed;
@@ -114,13 +114,13 @@ class PhysicsEngine {
         const limit = 18;
         if (Math.abs(this.ball.position.x) > limit) {
             this.ball.position.x = Math.sign(this.ball.position.x) * limit;
-            this.ballVelocity.x *= -0.7;
+            this.ballVelocity.x *= -0.5;
         }
         if (Math.abs(this.ball.position.z) > limit) {
             this.ball.position.z = Math.sign(this.ball.position.z) * limit;
-            this.ballVelocity.z *= -0.7;
+            this.ballVelocity.z *= -0.5;
         }
-        
+
         // COLLISIONS
         this.checkWallCollisions();
         this.checkHoleCollisions();
@@ -152,7 +152,7 @@ class PhysicsEngine {
             const dz = this.ball.position.z - wallWorldPos.z;
             
             // âœ… Ignorer si pas au mÃªme niveau (avec marge plus large)
-            if (Math.abs(dy) > 3) return;
+            if (Math.abs(dy) > 5) return;
             
             const w = wall.geometry.parameters.width;
             const d = wall.geometry.parameters.depth;
@@ -169,12 +169,12 @@ class PhysicsEngine {
                 // âœ… Collision avec rebond
                 if (Math.abs(dx) / (w/2) > Math.abs(dz) / (d/2)) {
                     this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.2);
-                    this.ballVelocity.x *= -0.6;
-                    this.ballVelocity.z *= 0.7;
+                    this.ballVelocity.x *= -0.5;
+                    this.ballVelocity.z *= 0.6;
                 } else {
                     this.ball.position.z = wallWorldPos.z + Math.sign(dz) * (d/2 + this.ballRadius + 0.2);
-                    this.ballVelocity.z *= -0.6;
-                    this.ballVelocity.x *= 0.7;
+                    this.ballVelocity.z *= -0.5;
+                    this.ballVelocity.x *= 0.6;
                 }
             }
         });
@@ -192,9 +192,9 @@ class PhysicsEngine {
                 Math.pow(this.ball.position.z - holeWorldPos.z, 2)
             );
             
-            const holeRadius = 2.5; // Rayon de dÃ©tection rÃ©duit pour plus de prÃ©cision
+            const holeRadius = 1.8; // Rayon de détection réduit pour plus de précision
             
-            // âœ… DÃ©terminer la plateforme actuelle de la bille
+            // … Déterminer la plateforme actuelle de la bille
             let currentPlatform;
             if (this.ball.position.y > -10) {
                 currentPlatform = 1; // Plateforme haute
@@ -202,7 +202,6 @@ class PhysicsEngine {
                 currentPlatform = 2; // Plateforme finale
             }
             
-            // âœ… DÃ©terminer la plateforme du trou
             let holePlatform;
             if (holeWorldPos.y > -10) {
                 holePlatform = 1;
@@ -210,17 +209,14 @@ class PhysicsEngine {
                 holePlatform = 2;
             }
             
-            // âœ… La bille doit Ãªtre sur la MÃŠME plateforme que le trou
             const isOnSamePlatform = currentPlatform === holePlatform;
             
-            // ðŸ” LOG si proche du trou (pour debug)
             if (dist2D < 5 && isOnSamePlatform) {
-                console.log(`ðŸ” Proche trou #${index} - Dist: ${dist2D.toFixed(2)}, Rayon: ${holeRadius}, isFalling: ${this.isFalling}`);
+                console.log(`🔍 Proche trou #${index} - Dist: ${dist2D.toFixed(2)}, Rayon: ${holeRadius}, isFalling: ${this.isFalling}`);
             }
             
-            // âœ… Condition de chute : mÃªme plateforme + dans le rayon + pas dÃ©jÃ  en train de tomber
             if (dist2D < holeRadius && isOnSamePlatform && !this.isFalling) {
-                console.log(`ðŸ”¥ ACTIVATION CHUTE - Distance: ${dist2D.toFixed(2)}, Plateforme: ${holePlatform}`);
+                console.log(`🔒 ACTIVATION CHUTE - Distance: ${dist2D.toFixed(2)}, Plateforme: ${holePlatform}`);
                 this.isFalling = true;
                 
                 // Attraction FORTE vers le centre du trou

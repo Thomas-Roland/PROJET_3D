@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - SpeedLabyrinthe 3D</title>
+    <link rel="icon" type="image/x-icon" href="src/favicon.ico">
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+    <div class="help-container">
+        <a href="index.html" class="back-button">
+            ← Retour au jeu
+        </a>
+
+        <h1 class="help-title">SpeedLabyrinthe 3D</h1>
+        <p class="help-subtitle">Livrable d'Application Three.js : Labyrinthe 3D</p>
+
+        <div class="help-section">
+            <h2>1. Mon jeu</h2>
+            <p>
+                Le joueur doit guider une bille lumineuse à travers un labyrinthe 3D suspendu dans l'espace, 
+                en inclinant la structure entière pour faire rouler la bille jusqu'à la sortie, tout en évitant les ennemis et 
+                en collectant des cristaux. Le joueur doit atteindre le trou pour descendre dans le niveau suivant. 
+                Les maps restent les mêmes.
+            </p>
+        </div>
+
+        <div class="help-section">
+            <h2>2. Niveaux de difficulté</h2>
+            <div class="difficulty-grid">
+                <div class="difficulty-card beginner">
+                    <div class="difficulty-title">🟢 Débutant</div>
+                    <div class="difficulty-detail">• Peu d'ennemis</div>
+                    <div class="difficulty-detail">• Labyrinthe simple</div>
+                    <div class="difficulty-detail">• <strong>Temps :</strong> 1 minute</div>
+                </div>
+                <div class="difficulty-card intermediate">
+                    <div class="difficulty-title">🟠 Intermédiaire</div>
+                    <div class="difficulty-detail">• 0 ennemi</div>
+                    <div class="difficulty-detail">• Passages étroits</div>
+                    <div class="difficulty-detail">• <strong>Temps :</strong> 45 secondes</div>
+                </div>
+                <div class="difficulty-card expert">
+                    <div class="difficulty-title">🔴 Expert</div>
+                    <div class="difficulty-detail">• 5 ennemis</div>
+                    <div class="difficulty-detail">• Labyrinthe complexe</div>
+                    <div class="difficulty-detail">• <strong>Temps :</strong> 30 secondes</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>3. Système de points</h2>
+            <div class="points-box">
+                <div class="points-item">
+                    <span class="points-label">Niveau terminé</span>
+                    <span class="points-value">+200 points</span>
+                </div>
+                <div class="points-item">
+                    <span class="points-label">Cristal collecté</span>
+                    <span class="points-value">+10 points</span>
+                </div>
+                <div class="points-item">
+                    <span class="points-label">Bonus temps (par seconde restante)</span>
+                    <span class="points-value">+10 points</span>
+                </div>
+                <div class="points-item">
+                    <span class="points-label">Bonus cristaux collectés</span>
+                    <span class="points-value">+10 points</span>
+                </div>
+                <div class="points-item">
+                    <span class="points-label">Dégât</span>
+                    <span class="points-value">-20 points</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>4. Interactions</h2>
+            
+            <div class="interaction-section">
+                <h3>→ Souris/Tactile</h3>
+                <ul>
+                    <li><strong>Clic + Drag :</strong> Incline le labyrinthe (comme un plateau physique)</li>
+                    <li><strong>Survol :</strong> Met en surbrillance les cristaux collectables</li>
+                </ul>
+            </div>
+
+            <div class="interaction-section">
+                <h3>→ Caméra</h3>
+                <ul>
+                    <li><strong>Touches fléchées :</strong> Rotation rapide de 90° (pour visualiser chaque face)</li>
+                </ul>
+            </div>
+
+            <div class="interaction-section">
+                <h3>→ GUI</h3>
+                <ul>
+                    <li><strong>Slider d'inclinaison max</strong> (mode facile = plus de marge)</li>
+                    <li><strong>Affichage :</strong> Cristaux collectés, temps restant, niveau actuel</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>5. Pourquoi la 3D ?</h2>
+            <p>
+                La 3ème dimension dans mon jeu est indispensable car il ne peut pas exister en 2D. 
+                La mécanique centrale (inclinaison 3D, multi-niveaux et gravité) est en 3D obligatoirement pour être jouable.
+            </p>
+        </div>
+
+        <div class="help-author">
+            Thomas ROLAND, MMI3 Dev<br>
+            Application Three.js - Labyrinthe 3D
+        </div>
+    </div>
+</body>
+</html>

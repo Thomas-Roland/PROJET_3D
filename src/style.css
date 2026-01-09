@@ -6,9 +6,15 @@
 
 body {
     font-family: Arial, sans-serif;
-    overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.5); /* noir à 50% */
+    overflow: hidden; /* ← GARDE ça pour le jeu */
+    background-color: rgba(0, 0, 0, 0.5);
     color: white;
+}
+
+/* ✅ EXCEPTION pour la page d'aide - permet le scroll */
+body:has(.help-container) {
+    overflow-y: auto !important;
+    height: auto !important;
 }
 
 
@@ -409,4 +415,200 @@ body {
 /* Amélioration des boutons au hover */
 .difficulty-btn:hover:not(:disabled) {
     box-shadow: 0 5px 15px rgba(68, 255, 255, 0.3);
+}
+
+/* ========== PAGE D'AIDE ========== */
+
+/* Conteneur principal de la page d'aide */
+.help-container {
+    max-width: 900px;
+    margin: 40px auto;  /* ← Change de "0 auto" à "40px auto" */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    min-height: calc(100vh - 80px); /* ← Ajoute cette ligne */
+}
+
+/* Titre principal */
+.help-title {
+    font-size: 42px;
+    text-align: center;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Sous-titre */
+.help-subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #aaaaaa;
+    margin-bottom: 40px;
+}
+
+/* Sections */
+.help-section {
+    margin-bottom: 35px;
+}
+
+.help-section h2 {
+    font-size: 28px;
+    margin: 40px 0 20px;
+    color: #00ffff;
+    border-bottom: 2px solid #00ffff;
+    padding-bottom: 10px;
+}
+
+.help-section h3 {
+    font-size: 22px;
+    margin: 25px 0 15px;
+    color: #ffaa00;
+}
+
+.help-section p {
+    margin: 15px 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.help-section ul {
+    margin: 15px 0 15px 25px;
+}
+
+.help-section li {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+/* Grille des difficultés */
+.difficulty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.difficulty-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid;
+}
+
+.difficulty-card.beginner { 
+    border-color: #00ff00; 
+}
+
+.difficulty-card.intermediate { 
+    border-color: #ffaa00; 
+}
+
+.difficulty-card.expert { 
+    border-color: #ff0000; 
+}
+
+.difficulty-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.difficulty-detail {
+    font-size: 15px;
+    margin: 8px 0;
+}
+
+/* Boîte de points */
+.points-box {
+    background: rgba(0, 255, 255, 0.1);
+    border-left: 4px solid #00ffff;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+.points-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.points-item:last-child {
+    border-bottom: none;
+}
+
+.points-label {
+    font-size: 16px;
+}
+
+.points-value {
+    font-weight: bold;
+    color: #00ffff;
+    font-size: 18px;
+}
+
+/* Sections d'interaction */
+.interaction-section {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+/* Texte surligné */
+.highlight {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+/* Auteur */
+.help-author {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 16px;
+    color: #aaaaaa;
+}
+
+.help-author strong {
+    color: #00ffff;
+}
+
+/* Bouton d'aide en haut à droite */
+.help-button {
+    position: fixed;
+    top: 20px;
+    right: 80px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    text-decoration: none;
+}
+
+.help-button:hover {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: #00ffff;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.help-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }

@@ -5,7 +5,7 @@ class LevelLoader {
         this.levels = {
             beginner: BeginnerLevel,
             intermediate: IntermediateLevel,
-            // expert: ExpertLevel                // À ajouter plus tard
+            expert: ExpertLevel                
         };
     }
     

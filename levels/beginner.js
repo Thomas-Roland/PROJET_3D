@@ -77,11 +77,11 @@ const BeginnerLevel = {
     
     // Paramètres de gameplay
     settings: {
-        timeLimit: 130,        
-        enemyCount: 0,
+        timeLimit: 60,        
+        enemyCount: 3,
         crystalCount: 8,
         enemySpeed: 0.08,
-        ballMaxSpeed: 0.06
+        ballMaxSpeed: 0.05
     }
 };
 

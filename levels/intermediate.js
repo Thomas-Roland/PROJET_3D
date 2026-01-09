@@ -103,10 +103,10 @@ const IntermediateLevel = {
     // Paramètres de gameplay (PLUS DIFFICILE que débutant)
     settings: {
         timeLimit: 45,        
-        enemyCount: 0,        
+        enemyCount: 4,        
         crystalCount: 12,      
         enemySpeed: 0.10,      
-        ballMaxSpeed: 0.22     
+        ballMaxSpeed: 0.15     
     }
 };
 
