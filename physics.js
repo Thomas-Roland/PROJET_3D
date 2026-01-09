@@ -75,7 +75,7 @@ class PhysicsEngine {
     this.mazeGroup.rotation.x = -this.tilt.x;
     this.mazeGroup.rotation.z = this.tilt.z;
         
-        const maxSpeed = 0.15;
+        const maxSpeed = 0.25;
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
         if (speed > maxSpeed) {
             this.ballVelocity.x = (this.ballVelocity.x / speed) * maxSpeed;

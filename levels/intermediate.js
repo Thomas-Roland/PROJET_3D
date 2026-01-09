@@ -106,7 +106,7 @@ const IntermediateLevel = {
         enemyCount: 4,        
         crystalCount: 12,      
         enemySpeed: 0.10,      
-        ballMaxSpeed: 0.15     
+        ballMaxSpeed: 0.20     
     }
 };
 

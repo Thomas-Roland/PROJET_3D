@@ -81,7 +81,7 @@ const BeginnerLevel = {
         enemyCount: 3,
         crystalCount: 8,
         enemySpeed: 0.08,
-        ballMaxSpeed: 0.15
+        ballMaxSpeed: 0.20
     }
 };
 

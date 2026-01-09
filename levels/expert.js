@@ -83,7 +83,7 @@ const ExpertLevel = {
         enemyCount: 5,
         crystalCount: 15,
         enemySpeed: 0.12,
-        ballMaxSpeed: 0.20
+        ballMaxSpeed: 0.25
     }
 };
 
