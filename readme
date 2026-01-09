@@ -5,6 +5,7 @@ project/
 ├── enemies.js gestionnaire d'ennemis
 ├── crystals.js gestionnaire de cristaux
 ├── platforms.js classe de base PlatformManager
+├── help.html
 │
 └── levels/
     ├── beginner.js configuration niveau débutant
