@@ -1,5 +1,3 @@
-// platforms.js - Plateformes avec chargement depuis configuration
-
 class PlatformManager {
     constructor(scene, mazeGroup) {
         this.scene = scene;
@@ -9,6 +7,12 @@ class PlatformManager {
         this.holes = [];
         this.exit = null;
     }
+
+
+
+
+
+
 
     // ===== CRÉATION DEPUIS CONFIGURATION DE NIVEAU =====
     createPlatform(levelConfig) {
@@ -37,6 +41,12 @@ class PlatformManager {
         };
     }
 
+
+
+
+
+
+
     // ===== PLATEFORME STANDARD =====
     createUpperPlatform(yPosition, withHole, type) {
         const platformGroup = new THREE.Group();
@@ -62,6 +72,13 @@ class PlatformManager {
         return platformGroup;
     }
 
+
+
+
+
+
+
+    
     // ===== BORDURES =====
     addUpperPlatformBorders(group) {
         const mat = new THREE.MeshStandardMaterial({ color: 0x555577 });
@@ -74,6 +91,13 @@ class PlatformManager {
         this.addWallToGroup(group, -half - t / 2, 1, 0, t, h, 36, mat);
         this.addWallToGroup(group, half + t / 2, 1, 0, t, h, 36, mat);
     }
+
+
+
+
+
+
+
 
     // ===== CRÉATION DES MURS DEPUIS CONFIG =====
     createWallsFromConfig(platformGroup, wallsConfig) {
@@ -93,6 +117,12 @@ class PlatformManager {
 
         console.log(`  📐 ${wallsConfig.length} murs ajoutés depuis la configuration`);
     }
+
+
+
+
+
+
 
     // ===== AJOUT D'UN TROU =====
     addHole(platformGroup, holeConfig) {
@@ -152,6 +182,13 @@ class PlatformManager {
         console.log(`  🕳️ Trou créé à (${holePosition.x}, ${holePosition.y}, ${holePosition.z})`);
     }
 
+
+
+
+
+
+
+
     // ===== ZONE DE SORTIE =====
     addExitZone(platformGroup) {
         const exitGeo = new THREE.CylinderGeometry(3, 3, 0.3, 32);
@@ -172,6 +209,11 @@ class PlatformManager {
         console.log(`  🚪 Zone de sortie créée`);
     }
 
+
+
+
+
+
     // ===== HELPER POUR AJOUTER UN MUR =====
     addWallToGroup(group, x, y, z, w, h, d, mat) {
         const geo = new THREE.BoxGeometry(w, h, d);
@@ -184,6 +226,12 @@ class PlatformManager {
         group.add(wall);
         this.walls.push(wall);
     }
+
+
+
+
+
+
 
     // ===== NETTOYAGE =====
     clear() {

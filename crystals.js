@@ -1,5 +1,3 @@
-// crystals.js - Gestion des cristaux
-
 class CrystalManager {
     constructor(scene, mazeGroup) {
         this.scene = scene;
@@ -10,16 +8,23 @@ class CrystalManager {
     createCrystals(count, level = 1) {
         this.clear();
         
-        // Position Y selon le niveau
+       
+       
+       
+        // Position
         let yPosition;
         if (level === 1) {
-            yPosition = 1.0; // Plateforme haute
+            yPosition = 1.0; 
         } else {
-            yPosition = -19.0; // Plateforme finale
+            yPosition = -19.0; 
         }
         
+
+
+
+        
+        //aléatoire
         for (let i = 0; i < count; i++) {
-            // ðŸ†• Zone Ã©largie : -15 Ã  +15 au lieu de -7 Ã  +7
             const x = (Math.random() - 0.5) * 30;
             const z = (Math.random() - 0.5) * 30;
             
@@ -42,7 +47,7 @@ class CrystalManager {
             this.crystals.push(crystal);
         }
         
-        console.log(`ðŸ’Ž ${count} cristaux crÃ©Ã©s au niveau ${level} (y=${yPosition})`);
+        console.log(`💎 ${count} cristaux créés au niveau ${level} (y=${yPosition})`);
         return this.crystals;
     }
     

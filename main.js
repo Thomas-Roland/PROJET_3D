@@ -1,5 +1,6 @@
-// main.js - Orchestrateur principal avec système de niveaux
+// main.js - Orchestrateur principal optimisé
 
+// ========== CLASSES UTILITAIRES ==========
 class TimeManager {
     constructor(updateTimer, gameOver) {
         this.timer = 0;
@@ -10,19 +11,22 @@ class TimeManager {
     
     startTimer(duration) {
         this.timer = duration;
-        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.stopTimer(); // Évite les doublons
         this.timerInterval = setInterval(() => {
             this.timer--;
             this.updateTimer(this.timer);
             if (this.timer <= 0) {
-                clearInterval(this.timerInterval);
+                this.stopTimer();
                 this.gameOver('Temps écoulé !');
             }
         }, 1000);
     }
     
     stopTimer() {
-        if (this.timerInterval) clearInterval(this.timerInterval);
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
     }
 }
 
@@ -102,81 +106,86 @@ directionalLight.position.set(5, 10, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// ========== VARIABLES ==========
+// ========== VARIABLES GLOBALES ==========
 let gameState = 'menu';
 let currentDifficulty = 'beginner';
 
 const mazeGroup = new THREE.Group();
 scene.add(mazeGroup);
 
-// 🆕 LEVEL LOADER
 const levelLoader = new LevelLoader();
 
-// 🆕 SYSTÈME DE DÉBLOCAGE
 const unlockedDifficulties = {
     beginner: true,
     intermediate: false,
     expert: false
 };
 
-let timeManager;
-let pointsManager;
-let platformManager;
-let enemyManager;
-let crystalManager;
-let physicsEngine;
+let timeManager, pointsManager, platformManager, enemyManager, crystalManager, physicsEngine;
 let ball = null;
 let ballLight = null;
+
+// Cache des éléments DOM
+const DOM = {};
 
 // ========== CONTRÔLES ==========
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
-renderer.domElement.addEventListener('mousedown', (e) => {
-    if (e.button === 0 && gameState === 'playing') {
-        isDragging = true;
+const mouseHandlers = {
+    down: (e) => {
+        if (e.button === 0 && gameState === 'playing') {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+    },
+    
+    move: (e) => {
+        if (!isDragging || gameState !== 'playing') return;
+        
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+        
+        physicsEngine.setTilt(
+            physicsEngine.tilt.x - deltaY * 0.001,
+            physicsEngine.tilt.z + deltaX * 0.001
+        );
+        
         previousMousePosition = { x: e.clientX, y: e.clientY };
+    },
+    
+    up: () => isDragging = false,
+    
+    wheel: (e) => e.preventDefault()
+};
+
+// ========== UI FUNCTIONS ==========
+const UI = {
+    updateTimer(timer) {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+        DOM.timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        DOM.timer.className = timer <= 10 ? 'timer timer-warning' : 'timer';
+    },
+    
+    update() {
+        const difficultyNames = { beginner: 'Débutant', intermediate: 'Intermédiaire', expert: 'Expert' };
+        DOM.level.textContent = difficultyNames[currentDifficulty] || currentDifficulty;
+        DOM.score.textContent = pointsManager.score;
+        DOM.crystals.textContent = pointsManager.collectedCrystals;
+        DOM.falls.textContent = pointsManager.falls;
+    },
+    
+    show(elementId) {
+        DOM[elementId]?.style && (DOM[elementId].style.display = elementId.includes('Menu') || elementId.includes('victory') || elementId.includes('gameOver') ? 'flex' : 'block');
+    },
+    
+    hide(elementId) {
+        DOM[elementId]?.style && (DOM[elementId].style.display = 'none');
     }
-});
+};
 
-renderer.domElement.addEventListener('mousemove', (e) => {
-    if (!isDragging || gameState !== 'playing') return;
-    
-    const deltaX = e.clientX - previousMousePosition.x;
-    const deltaY = e.clientY - previousMousePosition.y;
-    
-    const newTiltX = physicsEngine.tilt.x - deltaY * 0.001;
-    const newTiltZ = physicsEngine.tilt.z + deltaX * 0.001;
-    
-    physicsEngine.setTilt(newTiltX, newTiltZ);
-    
-    previousMousePosition = { x: e.clientX, y: e.clientY };
-});
-
-renderer.domElement.addEventListener('mouseup', () => {
-    isDragging = false;
-});
-
-renderer.domElement.addEventListener('wheel', (e) => {
-    e.preventDefault();
-});
-
-// ========== UI ==========
-function updateTimerUI(timer) {
-    const minutes = Math.floor(timer / 60);
-    const seconds = timer % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    document.getElementById('timer').className = timer <= 10 ? 'timer timer-warning' : 'timer';
-}
-
-function updateUI() {
-    document.getElementById('level').textContent = currentDifficulty === 'beginner' ? 'Débutant' : currentDifficulty;
-    document.getElementById('score').textContent = pointsManager.score;
-    document.getElementById('crystals').textContent = pointsManager.collectedCrystals;
-    document.getElementById('falls').textContent = pointsManager.falls;
-}
-
-// ========== BILLE ==========
+// ========== GAME LOGIC ==========
 function createBall() {
     if (ball) {
         mazeGroup.remove(ball);
@@ -201,13 +210,10 @@ function createBall() {
     return ball;
 }
 
-// ========== GAME LOGIC ==========
 function startGame(difficulty) {
     console.log('=== DÉMARRAGE DU JEU ===');
     
     currentDifficulty = difficulty;
-    
-    // 🆕 CHARGER LA CONFIGURATION DU NIVEAU
     const levelConfig = levelLoader.getLevel(difficulty);
     
     if (!levelConfig) {
@@ -215,27 +221,40 @@ function startGame(difficulty) {
         return;
     }
     
-    pointsManager = new PointsManager(updateUI);
-    timeManager = new TimeManager(updateTimerUI, gameOver);
+    // Initialisation des managers
+    pointsManager = new PointsManager(UI.update);
+    timeManager = new TimeManager(UI.updateTimer, gameOver);
     platformManager = new PlatformManager(scene, mazeGroup);
     enemyManager = new EnemyManager(scene, mazeGroup);
     crystalManager = new CrystalManager(scene, mazeGroup);
     
-    // 🆕 CRÉER LE NIVEAU DEPUIS LA CONFIG
+    // Création du niveau
     const { walls, holes, exit } = platformManager.createPlatform(levelConfig);
     const enemies = enemyManager.createEnemies(levelConfig.settings.enemyCount, 1);
     const crystals = crystalManager.createCrystals(levelConfig.settings.crystalCount, 1);
     
     createBall();
     
+    // Moteur physique
     physicsEngine = new PhysicsEngine(ball, mazeGroup, walls, holes, enemies, crystals, exit);
-    
     physicsEngine.onFall = () => pointsManager.addFall();
     physicsEngine.onCrystalCollected = () => pointsManager.addCrystal();
     physicsEngine.onLevelComplete = () => levelComplete(levelConfig);
+    physicsEngine.onPlatformChange = handlePlatformChange(levelConfig);
+    
+    // UI
+    UI.hide('startMenu');
+    UI.show('gameUI');
+    
+    gameState = 'playing';
+    UI.update();
+    timeManager.startTimer(levelConfig.settings.timeLimit);
+    
+    console.log('=== JEU DÉMARRÉ ===');
+}
 
-    // CALLBACK CHANGEMENT DE PLATEFORME
-    physicsEngine.onPlatformChange = (platformLevel) => {
+function handlePlatformChange(levelConfig) {
+    return (platformLevel) => {
         console.log(`🏯 Changement vers plateforme ${platformLevel}`);
         
         enemyManager.clear();
@@ -249,17 +268,6 @@ function startGame(difficulty) {
         
         console.log(`✔️ ${newEnemies.length} ennemis et ${newCrystals.length} cristaux recréés`);
     };
-    
-    document.getElementById('startMenu').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    
-    gameState = 'playing';
-    updateUI();
-    
-    // 🆕 UTILISER LE TEMPS DU NIVEAU
-    timeManager.startTimer(levelConfig.settings.timeLimit);
-    
-    console.log('=== JEU DÉMARRÉ ===');
 }
 
 function levelComplete(levelConfig) {
@@ -273,48 +281,38 @@ function levelComplete(levelConfig) {
     const timeBonus = timeManager.timer * 10;
     
     pointsManager.addLevelBonus(levelBonus, crystalBonus, timeBonus);
-    
-    // 🆕 DÉBLOQUER LE NIVEAU SUIVANT
     unlockNextDifficulty(currentDifficulty);
     
-    document.getElementById('gameUI').style.display = 'none';
-    document.getElementById('victory').style.display = 'flex';
-    document.getElementById('victoryMessage').textContent = `${levelConfig.name} terminé !`;
-    document.getElementById('crystalBonus').textContent = `+${crystalBonus} pts`;
-    document.getElementById('timeBonus').textContent = `+${timeBonus} pts`;
-    document.getElementById('totalScore').textContent = pointsManager.score;
+    UI.hide('gameUI');
+    UI.show('victory');
+    DOM.victoryMessage.textContent = `${levelConfig.name} terminé !`;
+    DOM.crystalBonus.textContent = `+${crystalBonus} pts`;
+    DOM.timeBonus.textContent = `+${timeBonus} pts`;
+    DOM.totalScore.textContent = pointsManager.score;
     
-    // 🆕 GÉRER LE BOUTON "NIVEAU SUIVANT"
-    const nextLevelBtn = document.getElementById('nextLevel');
+    // Gestion du bouton niveau suivant
     const nextDiff = levelLoader.getNextDifficulty(currentDifficulty);
-    
     if (nextDiff && unlockedDifficulties[nextDiff]) {
-        nextLevelBtn.style.display = 'block';
-        nextLevelBtn.onclick = () => {
-            returnToMenu();
-        };
+        DOM.nextLevel.style.display = 'block';
     } else {
-        nextLevelBtn.style.display = 'none';
+        DOM.nextLevel.style.display = 'none';
     }
 }
 
-// 🆕 FONCTION DE DÉBLOCAGE
 function unlockNextDifficulty(currentDiff) {
-    if (currentDiff === 'beginner') {
-        unlockedDifficulties.intermediate = true;
-        const btnIntermediate = document.getElementById('btn-intermediate');
-        if (btnIntermediate) {
-            btnIntermediate.disabled = false;
-            btnIntermediate.classList.remove('disabled');
-            console.log('🔓 Intermédiaire débloqué !');
-        }
-    } else if (currentDiff === 'intermediate') {
-        unlockedDifficulties.expert = true;
-        const btnExpert = document.getElementById('btn-expert');
-        if (btnExpert) {
-            btnExpert.disabled = false;
-            btnExpert.classList.remove('disabled');
-            console.log('🔓 Expert débloqué !');
+    const unlockMap = {
+        beginner: { next: 'intermediate', btnId: 'btn-intermediate', label: 'Intermédiaire' },
+        intermediate: { next: 'expert', btnId: 'btn-expert', label: 'Expert' }
+    };
+    
+    const unlock = unlockMap[currentDiff];
+    if (unlock) {
+        unlockedDifficulties[unlock.next] = true;
+        const btn = document.getElementById(unlock.btnId);
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+            console.log(`🔓 ${unlock.label} débloqué !`);
         }
     } else if (currentDiff === 'expert') {
         console.log('🏆 Tous les niveaux terminés !');
@@ -325,13 +323,14 @@ function gameOver(message) {
     timeManager.stopTimer();
     gameState = 'gameover';
     
-    document.getElementById('gameUI').style.display = 'none';
-    document.getElementById('gameOver').style.display = 'flex';
-    document.getElementById('gameOverMessage').textContent = message;
-    document.getElementById('finalScore').textContent = pointsManager.score;
+    UI.hide('gameUI');
+    UI.show('gameOver');
+    DOM.gameOverMessage.textContent = message;
+    DOM.finalScore.textContent = pointsManager.score;
 }
 
 function returnToMenu() {
+    // Nettoyage
     if (timeManager) timeManager.stopTimer();
     if (platformManager) platformManager.clear();
     if (enemyManager) enemyManager.clear();
@@ -348,11 +347,27 @@ function returnToMenu() {
     
     camera.position.set(0, 50, 60);
     
-    document.getElementById('gameOver').style.display = 'none';
-    document.getElementById('victory').style.display = 'none';
-    document.getElementById('startMenu').style.display = 'flex';
+    UI.hide('gameOver');
+    UI.hide('victory');
+    UI.show('startMenu');
     
     gameState = 'menu';
+}
+
+function updateCamera() {
+    if (!ball) return;
+    
+    const cameraOffset = ball.position.y < -10 ? 25 : 40;
+    const targetCameraY = ball.position.y + cameraOffset;
+    const diffY = targetCameraY - camera.position.y;
+    
+    if (Math.abs(diffY) > 0.5) {
+        camera.position.y += diffY * 0.12;
+    }
+    
+    camera.position.x = 0;
+    camera.position.z = 50;
+    camera.lookAt(0, camera.position.y - 40, 0);
 }
 
 function animate() {
@@ -365,37 +380,33 @@ function animate() {
             ballLight.position.copy(ball.position);
         }
         
-        // CAMÉRA SUIT LA BILLE
-        if (ball) {
-            let cameraOffset;
-            if (ball.position.y < -10) {
-                cameraOffset = 25;
-            } else {
-                cameraOffset = 40;
-            }
-            const targetCameraY = ball.position.y + cameraOffset;
-            const diffY = targetCameraY - camera.position.y;
-            if (Math.abs(diffY) > 0.5) {
-                camera.position.y += diffY * 0.12;
-            }
-            
-            camera.position.x = 0;
-            camera.position.z = 50;
-            camera.lookAt(0, camera.position.y - 40, 0);
-        }
+        updateCamera();
     }
     
     renderer.render(scene, camera);
 }
 
 // ========== ÉVÉNEMENTS ==========
-window.addEventListener('DOMContentLoaded', () => {
-    // 🔧 GESTION DYNAMIQUE DES BOUTONS DE DIFFICULTÉ
+function initDOMCache() {
+    const ids = ['timer', 'level', 'score', 'crystals', 'falls', 'startMenu', 'gameUI', 
+                 'victory', 'gameOver', 'victoryMessage', 'crystalBonus', 'timeBonus', 
+                 'totalScore', 'gameOverMessage', 'finalScore', 'nextLevel'];
+    
+    ids.forEach(id => DOM[id] = document.getElementById(id));
+}
+
+function initEventListeners() {
+    // Contrôles souris
+    renderer.domElement.addEventListener('mousedown', mouseHandlers.down);
+    renderer.domElement.addEventListener('mousemove', mouseHandlers.move);
+    renderer.domElement.addEventListener('mouseup', mouseHandlers.up);
+    renderer.domElement.addEventListener('wheel', mouseHandlers.wheel);
+    
+    // Boutons de difficulté
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
         if (btn.dataset.difficulty) {
             btn.addEventListener('click', () => {
                 const difficulty = btn.dataset.difficulty;
-                // Vérifier si le niveau est débloqué
                 if (unlockedDifficulties[difficulty]) {
                     startGame(difficulty);
                 } else {
@@ -404,27 +415,28 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-
-    const nextLevelBtn = document.getElementById('nextLevel');
-    const returnMenuBtn = document.getElementById('returnMenu');
-    const returnMenuVictoryBtn = document.getElementById('returnMenuVictory');
-    const quitGameBtn = document.getElementById('quitGame');
     
-    if (nextLevelBtn) nextLevelBtn.addEventListener('click', () => {
+    // Boutons de navigation
+    DOM.nextLevel?.addEventListener('click', () => {
         const nextDiff = levelLoader.getNextDifficulty(currentDifficulty);
-        if (nextDiff) {
-            returnToMenu();
-        }
+        if (nextDiff) returnToMenu();
     });
-    if (returnMenuBtn) returnMenuBtn.addEventListener('click', returnToMenu);
-    if (returnMenuVictoryBtn) returnMenuVictoryBtn.addEventListener('click', returnToMenu);
-    if (quitGameBtn) quitGameBtn.addEventListener('click', returnToMenu);
     
-    animate();
-});
+    document.getElementById('returnMenu')?.addEventListener('click', returnToMenu);
+    document.getElementById('returnMenuVictory')?.addEventListener('click', returnToMenu);
+    document.getElementById('quitGame')?.addEventListener('click', returnToMenu);
+    
+    // Resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+// ========== INITIALISATION ==========
+window.addEventListener('DOMContentLoaded', () => {
+    initDOMCache();
+    initEventListeners();
+    animate();
 });

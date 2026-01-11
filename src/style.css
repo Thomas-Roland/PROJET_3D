@@ -6,12 +6,11 @@
 
 body {
     font-family: Arial, sans-serif;
-    overflow: hidden; /* ← GARDE ça pour le jeu */
+    overflow: hidden; 
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
 }
 
-/* ✅ EXCEPTION pour la page d'aide - permet le scroll */
 body:has(.help-container) {
     overflow-y: auto !important;
     height: auto !important;
@@ -22,7 +21,11 @@ canvas {
     display: block;
 }
 
-/* Menu overlay */
+
+
+
+
+
 .menu-overlay {
     position: fixed;
     top: 0;
@@ -63,7 +66,11 @@ canvas {
     font-size: 1rem;
 }
 
-/* Boutons de difficulté */
+
+
+
+
+
 .difficulty-btn {
     display: block;
     width: 100%;
@@ -107,7 +114,12 @@ canvas {
     border-color: #666;
 }
 
-/* Stats */
+
+
+
+
+
+
 #stats {
     position: fixed;
     top: 20px;
@@ -145,7 +157,13 @@ canvas {
     color: #ff4444;
 }
 
-/* Timer */
+
+
+
+
+
+
+
 #timer {
     text-align: center;
     font-size: 2rem;
@@ -167,7 +185,12 @@ canvas {
     50% { opacity: 0.5; }
 }
 
-/* Bouton quitter */
+
+
+
+
+
+
 .btn-small {
     width: 100%;
     margin-top: 15px;
@@ -186,7 +209,12 @@ canvas {
     border-color: #ff4444;
 }
 
-/* Contrôles */
+
+
+
+
+
+
 #controls {
     position: fixed;
     bottom: 20px;
@@ -212,7 +240,10 @@ canvas {
     color: #44ffff;
 }
 
-/* Écrans de fin */
+
+
+
+
 .victory-title {
     color: #4CAF50;
     font-size: 2.5rem;
@@ -277,7 +308,15 @@ canvas {
     font-weight: bold;
 }
 
-/* Responsive */
+
+
+
+
+
+
+
+
+
 @media (max-width: 768px) {
     .menu-box h1 {
         font-size: 2rem;
@@ -328,6 +367,11 @@ canvas {
     }
 }
 
+
+
+
+
+
 #siteHeader {
     width: 100%;
     text-align: center;
@@ -344,22 +388,22 @@ canvas {
     max-width: 90%;
 }
 
-/* ========================================
-   🎬 VIDÉO DE FOND POUR LE MENU - CORRIGÉ
-   ======================================== */
 
-/* Conteneur de la vidéo de fond */
-.video-background {
+
+
+
+
+
+   .video-background {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    z-index: 1; /* AU-DESSUS du canvas mais EN-DESSOUS du menu */
+    z-index: 1; 
 }
 
-/* Vidéo plein écran avec transparence */
 .video-background video {
     position: absolute;
     top: 50%;
@@ -370,10 +414,9 @@ canvas {
     height: auto;
     transform: translate(-50%, -50%);
     object-fit: cover;
-    opacity: 0.5; /* Augmenté pour mieux voir */
+    opacity: 0.5; 
 }
 
-/* Overlay gradient sur la vidéo */
 .video-overlay {
     position: absolute;
     top: 0;
@@ -384,22 +427,21 @@ canvas {
     pointer-events: none;
 }
 
-/* ========================================
-   CORRECTIONS BODY ET BACKGROUND
-   ======================================== */
 
-/* Modifier le body pour enlever le fond noir opaque */
+
+
+
+
+
 body {
-    background-color: #0a0a1e; /* Couleur mais pas d'overlay */
+    background-color: #0a0a1e; 
 }
 
-/* S'assurer que le menu est au-dessus */
 .menu-overlay {
-    z-index: 100; /* Déjà présent normalement */
-    background: rgba(0, 0, 0, 0.3); /* Réduire l'opacité pour voir la vidéo */
+    z-index: 100; 
+    background: rgba(0, 0, 0, 0.3); 
 }
 
-/* Améliorer le menu-box pour qu'il soit bien visible */
 .menu-box {
     background: rgba(26, 26, 62, 0.95);
     backdrop-filter: blur(15px);
@@ -407,31 +449,43 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-/* Effet lumineux sur le titre */
 .menu-box h1 {
     text-shadow: 0 0 20px rgba(68, 255, 255, 0.5);
 }
 
-/* Amélioration des boutons au hover */
+
+
+
+
+
 .difficulty-btn:hover:not(:disabled) {
     box-shadow: 0 5px 15px rgba(68, 255, 255, 0.3);
 }
 
-/* ========== PAGE D'AIDE ========== */
 
-/* Conteneur principal de la page d'aide */
+
+
+
+
+
+
 .help-container {
     max-width: 900px;
-    margin: 40px auto;  /* ← Change de "0 auto" à "40px auto" */
+    margin: 40px auto;  
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border-radius: 20px;
     padding: 50px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    min-height: calc(100vh - 80px); /* ← Ajoute cette ligne */
+    min-height: calc(100vh - 80px); 
 }
 
-/* Titre principal */
+
+
+
+
+
+
 .help-title {
     font-size: 42px;
     text-align: center;
@@ -441,7 +495,12 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
-/* Sous-titre */
+
+
+
+
+
+
 .help-subtitle {
     text-align: center;
     font-size: 18px;
@@ -449,7 +508,12 @@ body {
     margin-bottom: 40px;
 }
 
-/* Sections */
+
+
+
+
+
+
 .help-section {
     margin-bottom: 35px;
 }
@@ -483,7 +547,12 @@ body {
     font-size: 16px;
 }
 
-/* Grille des difficultés */
+
+
+
+
+
+
 .difficulty-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -522,7 +591,12 @@ body {
     margin: 8px 0;
 }
 
-/* Boîte de points */
+
+
+
+
+
+
 .points-box {
     background: rgba(0, 255, 255, 0.1);
     border-left: 4px solid #00ffff;
@@ -553,7 +627,11 @@ body {
     font-size: 18px;
 }
 
-/* Sections d'interaction */
+
+
+
+
+
 .interaction-section {
     background: rgba(255, 255, 255, 0.03);
     padding: 20px;
@@ -561,13 +639,23 @@ body {
     margin: 15px 0;
 }
 
-/* Texte surligné */
+
+
+
+
+
 .highlight {
     color: #00ffff;
     font-weight: bold;
 }
 
-/* Auteur */
+
+
+
+
+
+
+
 .help-author {
     text-align: center;
     margin-top: 50px;
@@ -581,7 +669,6 @@ body {
     color: #00ffff;
 }
 
-/* Bouton d'aide en haut à droite */
 .help-button {
     position: fixed;
     top: 20px;

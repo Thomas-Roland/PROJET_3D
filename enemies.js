@@ -1,5 +1,3 @@
-// enemies.js - Gestion des ennemis
-
 class EnemyManager {
     constructor(scene, mazeGroup) {
         this.scene = scene;
@@ -10,16 +8,14 @@ class EnemyManager {
     createEnemies(count, level = 1) {
         this.clear();
         
-        // Position Y selon le niveau
         let yPosition;
         if (level === 1) {
-            yPosition = 1.2; // Plateforme haute
+            yPosition = 1.2; 
         } else {
-            yPosition = -18.8; // Plateforme finale
+            yPosition = -18.8; 
         }
         
         for (let i = 0; i < count; i++) {
-            // ðŸ†• Zone Ã©largie : -15 Ã  +15 au lieu de -7 Ã  +7
             const x = (Math.random() - 0.5) * 30;
             const z = (Math.random() - 0.5) * 30;
             

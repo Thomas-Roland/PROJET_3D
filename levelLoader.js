@@ -1,5 +1,3 @@
-// levelLoader.js - Gestionnaire de niveaux
-
 class LevelLoader {
     constructor() {
         this.levels = {
@@ -8,11 +6,10 @@ class LevelLoader {
             expert: ExpertLevel                
         };
     }
-    
     /**
      * Récupère la configuration d'un niveau selon la difficulté
-     * @param {string} difficulty - 'beginner', 'intermediate', ou 'expert'
-     * @returns {Object} Configuration du niveau
+     * @param {string} difficulty 
+     * @returns {Object} 
      */
     getLevel(difficulty) {
         if (!this.levels[difficulty]) {

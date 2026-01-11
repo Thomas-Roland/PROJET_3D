@@ -1,5 +1,3 @@
-// physics.js - Moteur physique simplifiÃ© et fonctionnel
-
 class PhysicsEngine {
     constructor(ball, mazeGroup, walls, holes, enemies, crystals, exit) {
         this.ball = ball;
@@ -37,10 +35,19 @@ class PhysicsEngine {
     
     update() {
         if (!this.ball) return;
+ 
         
+
+
+
+
         // Rotation du labyrinthe
         this.mazeGroup.rotation.x = -this.tilt.x;
         this.mazeGroup.rotation.z = -this.tilt.z;
+
+
+
+        
         
         // Si la bille tombe dans un trou
         if (this.isFalling) {
@@ -48,11 +55,11 @@ class PhysicsEngine {
             this.ballVelocity.x *= 0.95;
             this.ballVelocity.z *= 0.95;
             
-            console.log(`ðŸ“‰ Chute: y = ${this.ball.position.y.toFixed(2)}`);
+            console.log(`Chute: y = ${this.ball.position.y.toFixed(2)}`);
             
             // Atterrissage plateforme FINALE
             if (this.ball.position.y <= -18.5 && this.ball.position.y > -21) {
-                console.log(`âœ… ATTERRISSAGE PLATEFORME FINALE (y=${this.ball.position.y.toFixed(2)})`);
+                console.log(`ATTERRISSAGE PLATEFORME FINALE (y=${this.ball.position.y.toFixed(2)})`);
                 this.ball.position.y = -18.5;
                 this.ballVelocity.set(0, 0, 0);
                 this.isFalling = false;
@@ -62,10 +69,10 @@ class PhysicsEngine {
                 return;
             }
             
-            return; // Ne pas exÃ©cuter le reste pendant la chute
+            return; 
         }
         
-        // GRAVITÃ‰ VERTICALE (rÃ©duite pour Ã©viter chute spontanÃ©e)
+        // gravité verticcla
         this.ballVelocity.y -= 0.015;
         
         const gravity = 0.08;
@@ -75,42 +82,67 @@ class PhysicsEngine {
     this.mazeGroup.rotation.x = -this.tilt.x;
     this.mazeGroup.rotation.z = this.tilt.z;
         
-        const maxSpeed = 0.25;
+        const maxSpeed = 0.20;
         const speed = Math.sqrt(this.ballVelocity.x ** 2 + this.ballVelocity.z ** 2);
         if (speed > maxSpeed) {
             this.ballVelocity.x = (this.ballVelocity.x / speed) * maxSpeed;
             this.ballVelocity.z = (this.ballVelocity.z / speed) * maxSpeed;
         }
         
-        // DÃ‰PLACEMENT
+
+
+
+
+        // DéPLACEMENT
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.ball.position.z += this.ballVelocity.z;
-        
-        // COLLISION AVEC LE SOL - DÃ©tection prÃ©cise par plateforme
+
+
+
+
+        // COLLISION SOL
         let groundY;
-        
-        // Plateforme FINALE (y = -19.5)
+
+
+
+
+
+
+
+        // Plateforme FINALE
         if (this.ball.position.y < -15) {
             groundY = -19.5;
         } 
-        // Plateforme HAUTE (y = 0.5)
+
+
+
+        // Plateforme HAUTE 
         else {
             groundY = 0.5;
         }
-        
-        // EmpÃªcher de traverser le sol (SAUF si en chute dans un trou)
+
+
+
+
+
+
+        // Empêcher de traverser le sol (SAUF si en chute dans un trou)
         if (!this.isFalling && this.ball.position.y <= groundY + this.ballRadius) {
             this.ball.position.y = groundY + this.ballRadius;
             
             if (this.ballVelocity.y < -0.15) {
                 this.ballVelocity.y *= -0.3; // Rebond
             } else {
-                this.ballVelocity.y = 0; // ArrÃªt complet
+                this.ballVelocity.y = 0; // Arrêt complet
             }
         }
-        
-        // LIMITES DE LA PLATEFORME (doublÃ©es)
+
+
+
+
+
+        // LIMITES DE LA PLATEFORME
         const limit = 18;
         if (Math.abs(this.ball.position.x) > limit) {
             this.ball.position.x = Math.sign(this.ball.position.x) * limit;
@@ -121,22 +153,43 @@ class PhysicsEngine {
             this.ballVelocity.z *= -0.5;
         }
 
+
+
+
+
+        
         // COLLISIONS
         this.checkWallCollisions();
         this.checkHoleCollisions();
         this.checkEnemyCollisions();
         this.checkCrystalCollisions();
         this.checkExitCollision();
-        
-        // DÃ‰PLACEMENT ENNEMIS
+
+
+
+
+
+
+        // DÉPLACEMENT ENNEMIS
         this.updateEnemies();
+        
+
+
+
+
+
         
         // ROTATION CRISTAUX
         this.rotateCrystals();
         
+
+
+
+
+
         // TOMBE DANS LE VIDE (vraiment perdu)
         if (this.ball.position.y < -50) {
-            console.log("ðŸ’€ GAME OVER - TombÃ© dans le vide !");
+            console.log("💔 GAME OVER - Tombé dans le vide !");
             this.resetBall();
             if (this.onFall) this.onFall();
         }
@@ -150,8 +203,7 @@ class PhysicsEngine {
             const dx = this.ball.position.x - wallWorldPos.x;
             const dy = this.ball.position.y - wallWorldPos.y;
             const dz = this.ball.position.z - wallWorldPos.z;
-            
-            // âœ… Ignorer si pas au mÃªme niveau (avec marge plus large)
+
             if (Math.abs(dy) > 5) return;
             
             const w = wall.geometry.parameters.width;
@@ -166,7 +218,6 @@ class PhysicsEngine {
             const dist = Math.sqrt(distX * distX + distZ * distZ);
             
             if (dist < this.ballRadius + 0.1) {
-                // âœ… Collision avec rebond
                 if (Math.abs(dx) / (w/2) > Math.abs(dz) / (d/2)) {
                     this.ball.position.x = wallWorldPos.x + Math.sign(dx) * (w/2 + this.ballRadius + 0.2);
                     this.ballVelocity.x *= -0.5;
@@ -192,14 +243,19 @@ class PhysicsEngine {
                 Math.pow(this.ball.position.z - holeWorldPos.z, 2)
             );
             
-            const holeRadius = 1.8; // Rayon de détection réduit pour plus de précision
+            const holeRadius = 1.8;
             
+
+
+
+
+
             // … Déterminer la plateforme actuelle de la bille
             let currentPlatform;
             if (this.ball.position.y > -10) {
-                currentPlatform = 1; // Plateforme haute
+                currentPlatform = 1; 
             } else {
-                currentPlatform = 2; // Plateforme finale
+                currentPlatform = 2;
             }
             
             let holePlatform;
@@ -218,17 +274,29 @@ class PhysicsEngine {
             if (dist2D < holeRadius && isOnSamePlatform && !this.isFalling) {
                 console.log(`🔒 ACTIVATION CHUTE - Distance: ${dist2D.toFixed(2)}, Plateforme: ${holePlatform}`);
                 this.isFalling = true;
+
+
+
+
+
+                
                 
                 // Attraction FORTE vers le centre du trou
                 const pullStrength = 0.15;
                 this.ballVelocity.x += (holeWorldPos.x - this.ball.position.x) * pullStrength;
                 this.ballVelocity.z += (holeWorldPos.z - this.ball.position.z) * pullStrength;
-                this.ballVelocity.y = -0.5; // Force la chute
-                
-                return; // ðŸ†• SORTIR immÃ©diatement pour Ã©viter plusieurs dÃ©tections
+                this.ballVelocity.y = -0.5;
+
+                return; // 🔽 SORTIR immédiatement pour éviter plusieurs détections
             }
         });
     }
+
+
+
+
+
+
     
     checkEnemyCollisions() {
         this.enemies.forEach(enemy => {
@@ -240,12 +308,13 @@ class PhysicsEngine {
             if (heightDiff > 2) return;
             
             const dist = this.ball.position.distanceTo(enemyWorldPos);
-            
-  // Collision avec l'ennemi (0.4 = rayon ennemi)
+
+            // Collision avec l'ennemi (0.4 = rayon ennemi)
 if (dist < this.ballRadius + 0.4) {
     console.log("💥 Collision avec ennemi - RESPAWN !");
     this.resetBall();
-    
+
+
     // Si on était sur la plateforme 2, recréer les ennemis/cristaux de la plateforme 1
     if (enemyWorldPos.y < -10 && this.onPlatformChange) {
         this.onPlatformChange(1);
@@ -256,6 +325,13 @@ if (dist < this.ballRadius + 0.4) {
         });
     }
     
+
+
+
+
+
+
+
     checkCrystalCollisions() {
         this.crystals.forEach(crystal => {
             // Ne pas vÃ©rifier si dÃ©jÃ  collectÃ© ou invisible
@@ -289,6 +365,15 @@ if (dist < this.ballRadius + 0.4) {
         });
     }
     
+
+
+
+
+
+
+
+
+
     checkExitCollision() {
     if (!this.exit) return;
     
@@ -311,6 +396,12 @@ if (dist < this.ballRadius + 0.4) {
     }
 }
     
+
+
+
+
+
+
     updateEnemies() {
         this.enemies.forEach(enemy => {
             enemy.userData.changeDirectionTimer--;
@@ -357,6 +448,13 @@ if (dist < this.ballRadius + 0.4) {
         });
     }
     
+
+
+
+
+
+
+
     rotateCrystals() {
         this.crystals.forEach(crystal => {
             if (!crystal.userData.collected) {
@@ -365,9 +463,8 @@ if (dist < this.ballRadius + 0.4) {
         });
     }
     
-    // POUR COMPATIBILITÃ‰ (non utilisÃ© dans cette version)
     updateSolidObjects() {
-        console.log("âœ”ï¸ Objets initialisÃ©s");
+        console.log("✅ Objets initialisés");
     }
 }
 
